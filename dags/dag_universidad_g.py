@@ -3,7 +3,7 @@ from airflow import DAG
 from airflow.operators.dummy import DummyOperator
 import pandas as pd
 
-default_args
+
 
 with DAG(
     'universidades',
