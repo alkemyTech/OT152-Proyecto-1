@@ -11,7 +11,7 @@ with DAG(
 ) as dag:
 
     """usar PostgresOperator ejecutar query
-    create_pet_table = PostgresOperator(
+    universidad_table = PostgresOperator(
     task_id="universidad_sociales",
     postgres_conn_id="postgres_default",
     sql="sql/sociales.sql",
