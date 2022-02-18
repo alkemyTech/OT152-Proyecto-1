@@ -4,7 +4,6 @@ from airflow.operators.dummy import DummyOperator
  
 with DAG(
     'universidades C',
-    
     description='procesos ETL universidades',
     #defino ejecucion
     schedule_interval=timedelta(hours=1),
