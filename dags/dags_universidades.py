@@ -1,13 +1,23 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from airflow import DAG
 from airflow.operators.dummy import DummyOperator
+import pandas as pd
 
 with DAG(
     'universidades',
     description= 'ETL para dos universidades',
-    schedule_interval= timedelta(hours=1),
+    schedule_interval= "@hourly",
     start_date=datetime(2022, 2, 17),
 ) as dag:
-    tarea_1= DummyOperator(task_id='universidad de ciencias sociales')
-    tarea_2= DummyOperator(task_id='universidad J.F. Kenedy')
+
+    """usar PostgresOperator ejecutar query
+    create_pet_table = PostgresOperator(
+    task_id="universidad_sociales",
+    postgres_conn_id="postgres_default",
+    sql="sql/sociales.sql",
+    )"""   
+
+
+    tarea_1= DummyOperator(task_id='universidad_sociales') 
+    tarea_2= DummyOperator(task_id='universidad_Kenedy')
     [tarea_1,tarea_2]
