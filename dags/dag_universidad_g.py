@@ -1,8 +1,11 @@
 from datetime import datetime
 from airflow import DAG, models
+import airflow
 from airflow.operators.dummy import DummyOperator
 import pandas as pd
 from airflow.settings import Session
+from airflow.providers.postgres.operators.postgres import PostgresOperator
+
 
 def create_new_conn(session, attributes):
         new_conn = models.Connection()
@@ -18,14 +21,14 @@ def create_new_conn(session, attributes):
         session.commit()
 
 
-create_new_conn(Session,
-                    {"conn_id": "postgres_default",
-                     "conn_type": "postgres",
-                     "host": "training-main.cghe7e6sfljt.us-east-1.rds.amazonaws.com",
-                     "port": 5432,
-                     "schema": "public",
-                     "login": "alkymer",
-                     "password": "alkymer_123"})
+# create_new_conn(Session,
+#                     {"conn_id": "postgres_default",
+#                      "conn_type": "postgres",
+#                      "host": "training-main.cghe7e6sfljt.us-east-1.rds.amazonaws.com",
+#                      "port": 5432,
+#                      "schema": "public",
+#                      "login": "alkymer",
+#                      "password": "alkymer_123"})
 
 with DAG(
     'universidades',
@@ -34,12 +37,12 @@ with DAG(
     start_date=datetime(2022, 2, 17),
 ) as dag:
 
-    """usar PostgresOperator ejecutar query
+    #usar PostgresOperator ejecutar query
     universidad_kenedy = PostgresOperator(
     task_id="universidad_kenedy",
     postgres_conn_id="postgres_default",
     sql="sql/query_kenedy.sql",
-    )"""   
+    )
 
     """usar PostgresOperator ejecutar query
     universidad_lationamericana = PostgresOperator(
@@ -50,5 +53,5 @@ with DAG(
 
 
     tarea_1= DummyOperator(task_id='universidad_sociales') 
-    tarea_2= DummyOperator(task_id='universidad_Kenedy')
+    tarea_2= DummyOperator(task_id='universidad_kenedy')
     [tarea_1,tarea_2]
