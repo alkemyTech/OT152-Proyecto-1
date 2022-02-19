@@ -1,5 +1,5 @@
 from datetime import datetime
-from airflow import DAG
+from airflow import DAG, models
 from airflow.operators.dummy import DummyOperator
 import pandas as pd
 from airflow.settings import Session
@@ -18,7 +18,7 @@ def create_new_conn(session, attributes):
         session.commit()
 
 
-create_new_conn(session,
+create_new_conn(Session,
                     {"conn_id": "postgres_default",
                      "conn_type": "postgres",
                      "host": "training-main.cghe7e6sfljt.us-east-1.rds.amazonaws.com",
