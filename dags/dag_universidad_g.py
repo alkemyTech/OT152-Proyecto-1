@@ -37,12 +37,12 @@ with DAG(
     start_date=datetime(2022, 2, 17),
 ) as dag:
 
-    #usar PostgresOperator ejecutar query
-    universidad_kenedy = PostgresOperator(
-    task_id="universidad_kenedy",
-    postgres_conn_id="postgres_default",
-    sql="sql/query_kenedy.sql",
-    )
+    # usar PostgresOperator ejecutar query
+    # universidad_kenedy = PostgresOperator(
+    # task_id="universidad_kenedy",
+    # postgres_conn_id="postgres_default",
+    # sql="sql/query_kenedy.sql",
+    # )
 
     """usar PostgresOperator ejecutar query
     universidad_lationamericana = PostgresOperator(
