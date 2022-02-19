@@ -19,7 +19,7 @@ def create_new_conn(session, attributes):
 
 
 create_new_conn(session,
-                    {"conn_id": "postgres_1",
+                    {"conn_id": "postgres_default",
                      "conn_type": "postgres",
                      "host": "training-main.cghe7e6sfljt.us-east-1.rds.amazonaws.com",
                      "port": 5432,
