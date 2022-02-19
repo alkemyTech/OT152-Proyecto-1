@@ -13,10 +13,17 @@ with DAG(
 ) as dag:
 
     """usar PostgresOperator ejecutar query
-    universidad_table = PostgresOperator(
+    universidad_kenedy = PostgresOperator(
+    task_id="universidad_kenedy",
+    postgres_conn_id="postgres_default",
+    sql="sql/query_kenedy.sql",
+    )"""   
+
+    """usar PostgresOperator ejecutar query
+    universidad_lationamericana = PostgresOperator(
     task_id="universidad_sociales",
     postgres_conn_id="postgres_default",
-    sql="sql/sociales.sql",
+    sql="sql/query_latinoamericana.sql",
     )"""   
 
 
