@@ -11,7 +11,7 @@ default_args = {
     "Retry_delay": timedelta(minutes=5)
 
 }
-
+#Setting loggs according to the task
 logging.basicConfig(level=logging.DEBUG, filename='logger.log', datefmt=strftime("%Y-%m-%d"),
                     format='%(asctime)s:%(levelname)s:%(message)s')
                     
@@ -46,6 +46,7 @@ with DAG("universidades_D",
     sql_query_utn >> proc_utn >> uploadS3_utn
     sql_query_tres_de_febrero >> proc_tres_de_febrero >> uploadS3_tres_de_febrero
 
+#Log messages for each task
 log_critical1 = DummyOperator(task_id='log_query_utn_message')
 log_critical2 = DummyOperator(task_id='log_query_3febrero_message')
 log_critical3 = DummyOperator(task_id='processing_data_message')
