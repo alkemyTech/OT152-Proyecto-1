@@ -9,15 +9,27 @@ default_args = {
     "retry_delay": timedelta(minutes=5) 
 }
 with DAG(
-    date=datetime.today().strftime('%Y-%m-%d')
     'Universidades_E',
     description='OT152-228',
     schedule_interval=timedelta(hours=1),   
     start_date=datetime(2022, 2, 18)
 ) as dag:
+    # build date 
+    date=datetime.today().strftime('%Y-%m-%d')
+    
+    #config logging
+    #logging.basicConfig(filename='my_log.log', level=logging.INFO)
+    #LOGGER = logging.getLogger(__name__)
+    
+    
     query_pampa = DummyOperator(task_id='query_Pampa')  #Voy a usar un  PostgresOperator para ejecutar la querie
+    #LOGGER.info(fecha + "query-pampa")
+    
     query_interamericana = DummyOperator(task_id='query_interamericana') #Voy a usar un  PostgresOperator para ejecutar la querie
+    #LOGGER.info(fecha + "query-interamericana")
     procesamiento_datos = DummyOperator(task_id='procesamiento_datos') #Voy a usar un PythonOperator para procesar los datos
     subir_s3 = DummyOperator(task_id='subir_s3') #Voy a usar un S3 operator para subir los datos a S3
-
+    
+    
+    
     [query_pampa, query_interamericana] >> procesamiento_datos >> subir_s3
