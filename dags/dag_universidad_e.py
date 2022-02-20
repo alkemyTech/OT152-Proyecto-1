@@ -1,15 +1,15 @@
 from datetime import timedelta, datetime
-
 from airflow import DAG
-
 from airflow.operators.dummy import DummyOperator
-
+import logging
+from datetime import datetime
 
 default_args = {
     "retries": 5, #set retries at 5 according to the task 
     "retry_delay": timedelta(minutes=5) 
 }
 with DAG(
+    date=datetime.today().strftime('%Y-%m-%d')
     'Universidades_E',
     description='OT152-228',
     schedule_interval=timedelta(hours=1),   
