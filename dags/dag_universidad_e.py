@@ -4,6 +4,12 @@ from airflow import DAG
 
 from airflow.operators.dummy import DummyOperator
 
+
+default_args = {
+    "retries": 5, #set retries at 5 according to the task 
+    "retry_delay": timedelta(minutes=5) 
+}
+
 with DAG(
     'Universidades_E',
     description='OT152-228',
@@ -16,4 +22,3 @@ with DAG(
     subir_s3 = DummyOperator(task_id='subir_s3') #Voy a usar un S3 operator para subir los datos a S3
 
     [query_pampa, query_interamericana] >> procesamiento_datos >> subir_s3
-
