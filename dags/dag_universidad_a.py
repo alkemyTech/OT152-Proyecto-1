@@ -4,6 +4,11 @@ from airflow import DAG
 from airflow.operators.dummy import DummyOperator
 
 
+default_args = {
+    'retries': 5, # Quantity of retries before shutdown
+    'retry_delay': timedelta(minutes=5) # Wait time before next retry
+}
+
 with DAG(
     'Universities_A_dags',
     description='Perfomrs ELT to two universities',
