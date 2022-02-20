@@ -46,7 +46,7 @@ with DAG("universidades_D",
     sql_query_utn >> proc_utn >> uploadS3_utn
     sql_query_tres_de_febrero >> proc_tres_de_febrero >> uploadS3_tres_de_febrero
 
-log_critical1 = DummyOperator(task_id='log_query_utn')
-log_critical2 = DummyOperator(task_id='log_query_3febrero')
-log_critical3 = DummyOperator(task_id='processing_data')
-log_critical4 = DummyOperator(task_id='log_load_s3')
+log_critical1 = DummyOperator(task_id='log_query_utn_message')
+log_critical2 = DummyOperator(task_id='log_query_3febrero_message')
+log_critical3 = DummyOperator(task_id='processing_data_message')
+log_critical4 = DummyOperator(task_id='log_message_s3')
