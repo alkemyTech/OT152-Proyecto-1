@@ -11,5 +11,4 @@ FROM
     public.jujuy_utn
 WHERE
     university = 'universidad nacional de jujuy'
-    AND inscription_date BETWEEN '2020/09/01'
-    AND '2021/02/01'
+    AND inscription_date BETWEEN '2020/09/01' AND '2021/02/01'
