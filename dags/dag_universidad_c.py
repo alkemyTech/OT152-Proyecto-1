@@ -4,22 +4,21 @@ from airflow.operators.dummy import DummyOperator
  
 with DAG(
     'universidades_c',
-    description='procesos_universidades',
+    description='university_processes',
     #defino ejecucion
     schedule_interval=timedelta(hours=1),
     start_date=datetime(2022,2,18)
     ) as dag:
     
     
-    #Consultas
-    #SQL para Universidad Nacional
-    #SQL para Universidad de Palermo
+    #Queries
+    #SQL for Universidad Nacional
+    #SQL for Universidad de Palermo
     
-    #Procesamiento de datos
+    #Data processing 
     #pandas as pd 
     
-    #Carga de datos en S3
-    
+    #Upload data to S3    
     
     universidad_nacional= DummyOperator(task_id='universidad_nacional')
     universidad_de_palermo= DummyOperator(task_id='universidad_de_Palermo')
