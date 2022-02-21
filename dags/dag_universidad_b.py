@@ -4,6 +4,12 @@ from airflow.models.baseoperator import chain
 from datetime import datetime, timedelta
 
 
+#Setting retries at 5
+default_args = {
+    'retries':5,
+    'retry_delay':timedelta(minutes=5)
+}
+
 with DAG(
     'Universities_B_dags',
     description='Ejecuta ETL de las universidades B',
