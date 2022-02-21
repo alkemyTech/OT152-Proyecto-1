@@ -2,31 +2,26 @@ from datetime import timedelta, datetime
 from airflow import DAG
 from airflow.operators.dummy import DummyOperator
 import logging
-from datetime import datetime
+
 
 default_args = {
     "retries": 5, #set retries at 5 according to the task 
     "retry_delay": timedelta(minutes=5) 
 }
+date=datetime.today().strftime('%Y-%m-%d')
+#config logging
+#logging.basicConfig(level=logging.DEBUG, filename='test.log', format='%(asctime)s:%(levelname)s:%(message)s')
+logging.basicConfig(filename='test.log', format='%(asctime)s - %(name)s - %(message)s', level=logging.INFO)
+logger= logging.getLogger('Test')
+
 with DAG(
     'Universidades_E',
     description='OT152-228',
     schedule_interval=timedelta(hours=1),   
     start_date=datetime(2022, 2, 18)
 ) as dag:
-    # build date 
-    date=datetime.today().strftime('%Y-%m-%d')
-    
-    #config logging
-    #logging.basicConfig(filename='my_log.log', level=logging.INFO)
-    #LOGGER = logging.getLogger(__name__)
-    
-    
     query_pampa = DummyOperator(task_id='query_Pampa')  #Voy a usar un  PostgresOperator para ejecutar la querie
-    #LOGGER.info(fecha + "query-pampa")
-    
     query_interamericana = DummyOperator(task_id='query_interamericana') #Voy a usar un  PostgresOperator para ejecutar la querie
-    #LOGGER.info(fecha + "query-interamericana")
     procesamiento_datos = DummyOperator(task_id='procesamiento_datos') #Voy a usar un PythonOperator para procesar los datos
     subir_s3 = DummyOperator(task_id='subir_s3') #Voy a usar un S3 operator para subir los datos a S3
     
