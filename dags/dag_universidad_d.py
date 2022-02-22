@@ -12,9 +12,10 @@ default_args = {
 
 }
 #Setting loggs according to the task
-logging.basicConfig(level=logging.DEBUG, filename='logger.log', datefmt=strftime("%Y-%m-%d"),
-                    format='%(asctime)s:%(levelname)s:%(message)s')
-                    
+logging.basicConfig(level=logging.INFO, datefmt=strftime("%Y-%m-%d"),
+                    format='%(asctime)s - %(name)s - %(message)s')
+logger = logging.getLogger("Universidad_d")
+
 with DAG("universidades_D",
     description='Query Universidades_D',
     schedule_interval=timedelta(hours=1),
