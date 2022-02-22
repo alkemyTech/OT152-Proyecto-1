@@ -1,10 +1,15 @@
-from airflow import DAG
 from datetime import timedelta, datetime
+import logging
+
+from airflow import DAG
 from airflow.operators.dummy import DummyOperator
 
+logging.basicConfig(level=logging.INFO, datefmt='%Y-%m-%d', format='%(asctime)s - %(name)s - %(message)s')
+logger = logging.getLogger('univ_f')
+
 default_args = {
-    "retries": 5, # try 5 times
-    "retry_delay": timedelta(minutes=10) # wait 10 minutes to try again
+    "retries": 5,  # try 5 times
+    "retry_delay": timedelta(minutes=10)  # wait 10 minutes to try again
 }
 with DAG(
     'Query_Universidad_F',
@@ -18,4 +23,4 @@ with DAG(
     tarea2 = DummyOperator(task_id='Query_F2') #Universidad de Río Cuarto
     tarea3 = DummyOperator(task_id='Processing_data')#Reading and processing data using read_sql
     tarea4 = DummyOperator(task_id='Upload_S3')#uploading data to s3
-    [tarea1,tarea2]>> tarea3 >> tarea4
+    [tarea1, tarea2] >> tarea3 >> tarea4
