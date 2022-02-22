@@ -9,4 +9,5 @@ SELECT
   codigo_postal as postal_code,
   correo_electronico as email
 FROM public.flores_comahue
-AND TO_DATE(inscription_dates,'DD-MM-YYYY') BETWEEN '01/09/2020' AND '01/02/2021';
+WHERE universidad= 'UNIVERSIDAD DE FLORES'
+AND TO_DATE(fecha_de_inscripcion,'YYYY-MM-DD') BETWEEN '01/09/2020' AND '01/02/2021';
