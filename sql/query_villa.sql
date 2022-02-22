@@ -5,7 +5,7 @@ SELECT
   LEFT(nombre,STRPOS (nombre,'_')) as first_name,
   RIGHT(nombre,STRPOS (nombre,'_')+1) as last_name,
   sexo as gender,
-  date_part('year',now())-date_part('year',to_date(fecha_nacimiento, 'DD-Mon-YY')) as age,
+  date_part('year',to_date(fecha_nacimiento, 'DD-Mon-YY'))-date_part('year',now()) as age,
   email
   
 FROM public.salvador_villa_maria
