@@ -8,11 +8,14 @@ default_args = {
     "retries": 5, #set retries at 5 according to the task 
     "retry_delay": timedelta(minutes=5) 
 }
-date=datetime.today().strftime('%Y-%m-%d')
+
 #config logging
-#logging.basicConfig(level=logging.DEBUG, filename='test.log', format='%(asctime)s:%(levelname)s:%(message)s')
-logging.basicConfig(filename='test.log', format='%(asctime)s - %(name)s - %(message)s', level=logging.INFO)
-logger= logging.getLogger('Test')
+logging.basicConfig(
+    filename='test.log', 
+    format='%(asctime)s - %(name)s - %(message)s', 
+    datefmt='%Y-%m-%d',
+    level=logging.INFO)
+logger= logging.getLogger('universidad_e')
 
 with DAG(
     'Universidades_E',
