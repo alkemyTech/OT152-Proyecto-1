@@ -2,7 +2,10 @@ from airflow import DAG
 from datetime import timedelta, datetime
 from airflow.operators.dummy import DummyOperator
 
-
+default_args = {
+    "retries": 5, # try 5 times
+    "retry_delay": timedelta(minutes=10) # wait 10 minutes to try again
+}
 with DAG(
     'Query_Universidad_F',
     description='Realizar consultas sobre Universidad de Moron y Rio Cuarto',
