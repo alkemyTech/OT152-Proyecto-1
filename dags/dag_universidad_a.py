@@ -4,10 +4,30 @@ from airflow import DAG
 from airflow.operators.dummy import DummyOperator
 
 
+import logging
+from distutils.debug import DEBUG
+
 default_args = {
     'retries': 5, # Quantity of retries before shutdown
     'retry_delay': timedelta(minutes=5) # Wait time before next retry
 }
+ 
+# create logger
+logger = logging.getLogger("universidad_a")
+
+# create console handler and set level to debug
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+
+# create formatter
+formatter = logging.Formatter("%(asctime)s,%(name)s,%(message)s","%Y-%m-%d")
+
+# add formatter to ch
+ch.setFormatter(formatter)
+
+# add ch to logger
+logger.addHandler(ch)
+
 
 with DAG(
     'Universities_A_dags',
