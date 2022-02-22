@@ -10,4 +10,4 @@ SELECT
   correo_electronico as email
   
 FROM public.flores_comahue
-AND TO_DATE(inscription_dates,'DD-MM-YYYY') BETWEEN '01/09/2020' AND '01/02/2021'
+AND TO_DATE(inscription_dates,'DD-MM-YYYY') BETWEEN '01/09/2020' AND '01/02/2021';
