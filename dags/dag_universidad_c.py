@@ -2,6 +2,7 @@ from datetime import timedelta,datetime
 from airflow import DAG 
 from airflow.operators.dummy import DummyOperator
 
+
 default_args = {
     'retries' : 5,
     'retry_delay' : timedelta(minutes=5)
@@ -28,5 +29,6 @@ with DAG(
     
     universidad_nacional= DummyOperator(task_id='universidad_nacional')
     universidad_de_palermo= DummyOperator(task_id='universidad_de_Palermo')
+
 
     universidad_nacional >> universidad_de_palermo
