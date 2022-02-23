@@ -1,7 +1,17 @@
+import logging 
 from datetime import timedelta,datetime
+from time import strftime
+
 from airflow import DAG 
 from airflow.operators.dummy import DummyOperator
 
+
+#Configuro los loggs acorde a lo que pide la tarea
+logging.basicConfig(level=logging.DEBUG, 
+datefmt=strftime("%Y-%m-%d"), 
+format='%(asctime)s - %(name)s - %(message)s')
+
+logger = logging.getLogger('Universidades C')
 
 default_args = {
     'retries' : 5,
