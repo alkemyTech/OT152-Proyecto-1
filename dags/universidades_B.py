@@ -1,6 +1,13 @@
+import logging
 from airflow import DAG
 from airflow.operators.dummy import DummyOperator
 from datetime import datetime, timedelta
+
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(message)s',  
+    datefmt='%Y-%m-%d'
+)
+logger = logging.getLogger("univ_b")
 
 
 with DAG(
