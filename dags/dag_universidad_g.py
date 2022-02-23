@@ -1,4 +1,13 @@
+import logging
 from datetime import timedelta
+
+
+# Basic configuration of the format and instantiation of the logger
+logging.basicConfig(
+        format='%(asctime)s - %(name)s - %(message)s',
+        level=logging.DEBUG,
+        datefmt='%Y-%m-%d')
+logger = logging.getLogger('univ_g')
 
 default_args = {
     "retries": 5,  # Try 5 times
