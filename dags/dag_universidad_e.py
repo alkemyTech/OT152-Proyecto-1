@@ -1,14 +1,21 @@
 from datetime import timedelta, datetime
-
 from airflow import DAG
-
 from airflow.operators.dummy import DummyOperator
+import logging
 
 
 default_args = {
     "retries": 5, #set retries at 5 according to the task 
     "retry_delay": timedelta(minutes=5) 
 }
+
+#config logging
+logging.basicConfig(
+    filename='test.log', 
+    format='%(asctime)s - %(name)s - %(message)s', 
+    datefmt='%Y-%m-%d',
+    level=logging.INFO)
+logger= logging.getLogger('universidad_e')
 
 with DAG(
     'Universidades_E',
