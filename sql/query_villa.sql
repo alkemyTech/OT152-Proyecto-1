@@ -6,6 +6,7 @@ SELECT
   RIGHT(nombre,STRPOS (nombre,'_')+1) as last_name,
   sexo as gender,
   date_part('year',to_date(fecha_nacimiento, 'DD-Mon-YY'))-date_part('year',now()) as age,
+  localidad as location,
   email
   
 FROM public.salvador_villa_maria
