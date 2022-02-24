@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
-from airflow import DAG
-from airflow.operators.dummy import DummyOperator
+#from airflow import DAG
+#from airflow.operators.dummy import DummyOperator
 
 
 import logging
@@ -13,20 +13,9 @@ default_args = {
 }
  
 # create logger
-logger = logging.getLogger("universidad_a")
-
-# create console handler and set level to debug
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-
-# create formatter
-formatter = logging.Formatter("%(asctime)s,%(name)s,%(message)s","%Y-%m-%d")
-
-# add formatter to ch
-ch.setFormatter(formatter)
-
-# add ch to logger
-logger.addHandler(ch)
+FORMAT='%(asctime)s - %(name)s - %(message)s'
+logging.basicConfig(level=logging.DEBUG,datefmt=("%Y-%m-%d"),format=FORMAT)
+logger = logging.getLogger('universidad_a')
 
 
 with DAG(
