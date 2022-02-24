@@ -1,8 +1,9 @@
 import logging
 from datetime import timedelta
 from time import strftime
-#from airflow.operators import PythonOperator
+from airflow.operators.python_operator import PythonOperator
 from airflow.models import DAG
+#from airflow.operators import python_operator
 
 logging.basicConfig(level=logging.INFO, datefmt=strftime("%Y-%m-%d"),
                     format='%(asctime)s - %(name)s - %(message)s')
