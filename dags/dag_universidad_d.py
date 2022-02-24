@@ -3,7 +3,7 @@ from airflow import DAG
 from airflow.operators.dummy import DummyOperator
 
 with DAG(
-    dag_id = "ETL para dos universidades", 
+    dag_id = "ETL_para_dos_universidades", 
     description = "ETL para dos universidades",
     schedule_interval = "@hourly",
     start_date = datetime(2002,2,18)
