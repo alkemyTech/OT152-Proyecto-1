@@ -13,18 +13,24 @@ logger = logging.getLogger('Universidad_d')
 #configuro los retries acorde a lo que pide la tarea
 args = {
     'retries': 5,
-    'retry_delay': timedelta(minutes=5)
-    'start_date': datetime(2022,2,28)
+    'retry_delay': timedelta(minutes=5),
+    
 }
 
 dag = DAG(
-    dag_id='dag_universidad_d', default_args=args,
-    schedule_interval=None)
+    dag_id='dag_universidad_d', 
+    default_args=args,
+    schedule_interval=timedelta(minutes=2),
+    start_date= datetime(2022,2,24)
+    )
 
 def etl_extract():
-    with open('.\sql\query_utl.sql') as f:
-        query = f.read()
-    f.close()
+    # with open('.\sql\query_utl.sql') as f:
+    #     query = f.read()
+    # f.close()
+    # print(query)
+    print('test')
+    logging.info('test')
 
 task_1= PythonOperator(
     task_id='extract_utn',
