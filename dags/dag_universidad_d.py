@@ -1,5 +1,5 @@
 import logging
-from datetime import timedelta
+from datetime import timedelta, datetime
 from time import strftime
 from airflow.operators.python_operator import PythonOperator
 from airflow.models import DAG
@@ -14,6 +14,7 @@ logger = logging.getLogger('Universidad_d')
 args = {
     'retries': 5,
     'retry_delay': timedelta(minutes=5)
+    'start_date': datetime(2022,2,28)
 }
 
 dag = DAG(
@@ -28,5 +29,5 @@ def etl_extract():
 task_1= PythonOperator(
     task_id='extract_utn',
     python_callable=etl_extract,
-    da=dag
+    dag=dag
 )
