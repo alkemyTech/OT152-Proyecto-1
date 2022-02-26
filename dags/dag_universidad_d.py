@@ -4,9 +4,10 @@ from time import strftime
 from airflow.operators.python_operator import PythonOperator
 from airflow.models import DAG
 #from airflow.operators import python_operator
-
+import sqlalchemy as db
 from os import environ
 from dotenv import load_dotenv
+import pandas as pd
 
 logging.basicConfig(level=logging.INFO, datefmt=strftime("%Y-%m-%d"),
                     format='%(asctime)s - %(name)s - %(message)s')
@@ -27,7 +28,7 @@ DB_HOST = environ['DB_HOST']
 PORT = environ['DB_PORT']
 DB_NAME = environ['DB_NAME']
 path ='postgresql://{}:{}@{}/{}' #Path DB for connection
-
+engine = db.create_engine(path, echo=True)
 
 dag = DAG(
     dag_id='dag_universidad_d', 
@@ -41,6 +42,9 @@ def etl_extract():
     #     query = f.read()
     # f.close()
     # print(query)
+    con = db.create_engine(path, echo=True)
+    query='select * from public.jujuy_utn'
+    df_raw= pd.read_sql_query(query, con)
     print('test')
     logging.info('test')
 
