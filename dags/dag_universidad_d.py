@@ -33,7 +33,7 @@ con = db.create_engine(path, echo=True)
 dag = DAG(
     dag_id='dag_universidad_d', 
     default_args=args,
-    schedule_interval=timedelta(minutes=2),
+    schedule_interval=timedelta(minutes=5),
     start_date= datetime(2022,2,24)
     )
 
