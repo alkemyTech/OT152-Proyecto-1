@@ -27,8 +27,8 @@ DB_PASSWORD =environ['DB_PASSWORD']
 DB_HOST = environ['DB_HOST']
 PORT = environ['DB_PORT']
 DB_NAME = environ['DB_NAME']
-path ='postgresql://{}:{}@{}/{}' #Path DB for connection
-engine = db.create_engine(path, echo=True)
+path ='postgresql://{}:{}@{}/{}'.format(DB_USER,DB_PASSWORD,DB_HOST, DB_NAME) #Path DB for connection
+con = db.create_engine(path, echo=True)
 
 dag = DAG(
     dag_id='dag_universidad_d', 
@@ -37,17 +37,19 @@ dag = DAG(
     start_date= datetime(2022,2,24)
     )
 
+
 def etl_extract():
-    # with open('.\sql\query_utl.sql') as f:
-    #     query = f.read()
-    # f.close()
+    with open('./sql/query_utn.sql') as f:
+        query = f.read()
+    f.close()
     # print(query)
     con = db.create_engine(path, echo=True)
-    query='select * from public.jujuy_utn'
+    #query='select * from public.jujuy_utn'
     df_raw= pd.read_sql_query(query, con)
-    print('test')
+    print(query)
     logging.info('test')
-
+    return df_raw
+df_raw=etl_extract()
 task_1= PythonOperator(
     task_id='extract_utn',
     python_callable=etl_extract,
