@@ -42,13 +42,12 @@ def etl_extract():
     with open('./sql/query_utn.sql') as f:
         query = f.read()
     f.close()
-    # print(query)
     con = db.create_engine(path, echo=True)
-    #query='select * from public.jujuy_utn'
     df_raw= pd.read_sql_query(query, con)
-    print(query)
+    df_raw.to_csv('./csv/data_utn.csv')
     logging.info('test')
     return df_raw
+
 df_raw=etl_extract()
 task_1= PythonOperator(
     task_id='extract_utn',
