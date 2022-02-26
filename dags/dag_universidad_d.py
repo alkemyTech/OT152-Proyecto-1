@@ -5,6 +5,9 @@ from airflow.operators.python_operator import PythonOperator
 from airflow.models import DAG
 #from airflow.operators import python_operator
 
+from os import environ
+from dotenv import load_dotenv
+
 logging.basicConfig(level=logging.INFO, datefmt=strftime("%Y-%m-%d"),
                     format='%(asctime)s - %(name)s - %(message)s')
 
@@ -16,6 +19,15 @@ args = {
     'retry_delay': timedelta(minutes=5),
     
 }
+#Configuracion de BD
+load_dotenv(dotenv_path='template.env') #set file .env
+DB_USER = environ['DB_USER']
+DB_PASSWORD =environ['DB_PASSWORD']
+DB_HOST = environ['DB_HOST']
+PORT = environ['DB_PORT']
+DB_NAME = environ['DB_NAME']
+path ='postgresql://{}:{}@{}/{}' #Path DB for connection
+
 
 dag = DAG(
     dag_id='dag_universidad_d', 
