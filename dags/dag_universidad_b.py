@@ -3,12 +3,18 @@ from airflow import DAG
 from airflow.operators.dummy import DummyOperator
 from datetime import datetime, timedelta
 
+
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(message)s',  
     datefmt='%Y-%m-%d'
 )
 logger = logging.getLogger("univ_b")
 
+#Setting retries at 5
+default_args = {
+    'retries':5,
+    'retry_delay':timedelta(minutes=5)
+}
 
 with DAG(
     'Universities_B_dags',
