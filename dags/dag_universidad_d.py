@@ -42,18 +42,12 @@ dag = DAG(
 
 def etl_extract():
     file=folder+ '/sql/query_utn.sql'
-     
     with open(file) as f:
         query = f.read()
     f.close()
     con=connection()
-    logging.info(path)
     df_raw= pd.read_sql_query(query, con)
     df_raw.to_csv(folder+ '/csv/utn.csv')
-    logging.info(query)
-    
-
-
 task_1= PythonOperator(
     task_id='extract_utn',
     python_callable=etl_extract,
