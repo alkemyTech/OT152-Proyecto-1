@@ -64,7 +64,24 @@ def extract(name_query,name_txt):
     df_raw= pd.read_sql_query(query, con)
     df_raw.to_csv(f'{folder}/txt/{name_txt}.txt')
 
-def crear_txt():
+def limpiar_string(df):
+    """
+    Lee la serie y limpia el str minúsculas, sin espacios extras, ni guiones
+        
+    Args:
+        df(serie Pandas): nombre del dataframe y serie ejemplo: DF['campo']
+    
+    Return:
+        df(serie Pandas): Serie Limpia
+    """
+    df=df.str.lower().str.replace('_',' ').str.strip()
+    return df
+
+def transform(df):
+    df['universidad']=df['universidad'].str.lower().replace('_',' ').str.strip()
+    df['carrera']= df['carrera'].str.lower()
+
+def load():
     """
     Ejecuta la extraccion de las universidades UTN y Tres de Febrero
     
