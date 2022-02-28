@@ -29,7 +29,7 @@ with DAG(
     
     
     #Queries
-    #SQL for Universidad Nacional
+    #SQL for Universidad Jujuy
     #SQL for Universidad de Palermo
     
     #Data processing 
@@ -37,8 +37,8 @@ with DAG(
     
     #Upload data to S3    
     
-    universidad_nacional= DummyOperator(task_id='universidad_nacional')
+    universidad_jujuy= DummyOperator(task_id='universidad_Jujuy)
     universidad_de_palermo= DummyOperator(task_id='universidad_de_Palermo')
 
 
-    universidad_nacional >> universidad_de_palermo
+    universidad_jujuy >> universidad_de_palermo
