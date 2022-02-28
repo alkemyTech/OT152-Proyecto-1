@@ -4,6 +4,10 @@ from time import strftime
 from airflow import DAG 
 from airflow.operators.dummy import DummyOperator
 import pandas as pd
+from os import environ, path
+from dotenv import load_dotenv
+import pandas as pd
+import sqlalchemy as db
 
 #Configuro los loggs acorde a lo que pide la tarea
 logging.basicConfig(level=logging.DEBUG, 
@@ -90,11 +94,11 @@ with DAG(
     
     #Upload data to S3    
     
-    universidad_jujuy= DummyOperator(task_id='universidad_Jujuy)
+    universidad_jujuy= DummyOperator(task_id='universidad_jujuy')
     universidad_de_palermo= DummyOperator(task_id='universidad_de_Palermo')
     generar_txt= PythonOperator(
     task_id='generar_txt',
     python_callable=crear_txt,
-    dag=dags
+    dag=dag)
 
     universidad_jujuy >> universidad_de_palermo
