@@ -17,7 +17,23 @@ default_args = {
     'retries' : 5,
     'retry_delay' : timedelta(minutes=5)
 }
-
+def extract(name_query,name_txt):
+    """
+    Lee query localizada en path /sql y genera archivo .txt
+    
+    Args:
+        name_query(str): nombre de la query localizada en path /sql
+        name_csv(str): nombre que se le va a dar a csv generado
+    
+    Return:
+        file: txt generado en la ruta /txt/name_txt
+    """
+    with open(f'{folder}/sql/{name_query}.sql') as f:
+        query = f.read()
+    f.close()
+    con=connection()
+    df_raw= pd.read_sql_query(query, con)
+    df_raw.to_csv(f'{folder}/txt/{name_txt}.txt')
 with DAG(
     'universidades_c',
     description='university_processes',
