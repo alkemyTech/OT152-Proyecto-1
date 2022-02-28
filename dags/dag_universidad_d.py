@@ -3,7 +3,7 @@ from datetime import timedelta, datetime
 from time import strftime
 from airflow.operators.python_operator import PythonOperator
 from airflow.models import DAG
-from os import environ, getcwd, path
+from os import environ, path
 from dotenv import load_dotenv
 import pandas as pd
 import sqlalchemy as db
