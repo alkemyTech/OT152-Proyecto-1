@@ -1,4 +1,3 @@
-from asyncio import DatagramTransport
 import logging
 from os import path
 from datetime import timedelta, datetime
