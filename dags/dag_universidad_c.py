@@ -59,6 +59,18 @@ def extract(name_query,name_txt):
     df_raw= pd.read_sql_query(query, con)
     df_raw.to_csv(f'{folder}/txt/{name_txt}.txt')
 
+def crear_txt():
+    """
+    Ejecuta la extraccion de las universidades UTN y Tres de Febrero
+    
+    Args:
+        None
+    Return:
+        /csv/csv_utn.csv
+        /csv/csv_tres_de_febrero.csv
+    """
+    extract('query_jujuy','txt_jujuy')
+    extract('query_palermo','txt_palermo')
 with DAG(
     'universidades_c',
     description='university_processes',
