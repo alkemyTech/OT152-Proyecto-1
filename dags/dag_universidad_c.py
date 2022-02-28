@@ -8,6 +8,7 @@ from os import environ, path
 from dotenv import load_dotenv
 import pandas as pd
 import sqlalchemy as db
+from airflow.operators.python_operator import PythonOperator
 
 #Configuro los loggs acorde a lo que pide la tarea
 logging.basicConfig(level=logging.DEBUG, 
