@@ -49,12 +49,11 @@ def etl_extract():
     con=connection()
     logging.info(path)
     df_raw= pd.read_sql_query(query, con)
-    #df_raw.to_csv('./OT152-Proyecto-1/csv/data_utn.csv')
+    df_raw.to_csv(folder+ '/csv/utn.csv')
     logging.info(query)
     
-    #return df_raw
 
-#df_raw=etl_extract()
+
 task_1= PythonOperator(
     task_id='extract_utn',
     python_callable=etl_extract,
