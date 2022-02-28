@@ -92,6 +92,9 @@ with DAG(
     
     universidad_jujuy= DummyOperator(task_id='universidad_Jujuy)
     universidad_de_palermo= DummyOperator(task_id='universidad_de_Palermo')
-
+    generar_txt= PythonOperator(
+    task_id='generar_txt',
+    python_callable=crear_txt,
+    dag=dags
 
     universidad_jujuy >> universidad_de_palermo
