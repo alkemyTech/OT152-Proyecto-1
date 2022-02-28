@@ -1,13 +1,22 @@
 from datetime import datetime, timedelta
 
-from airflow import DAG
-from airflow.operators.dummy import DummyOperator
+#from airflow import DAG
+#from airflow.operators.dummy import DummyOperator
 
+
+import logging
+from distutils.debug import DEBUG
 
 default_args = {
     'retries': 5, # Quantity of retries before shutdown
     'retry_delay': timedelta(minutes=5) # Wait time before next retry
 }
+ 
+# create logger
+FORMAT='%(asctime)s - %(name)s - %(message)s'
+logging.basicConfig(level=logging.DEBUG,datefmt=("%Y-%m-%d"),format=FORMAT)
+logger = logging.getLogger('universidad_a')
+
 
 with DAG(
     'Universities_A_dags',

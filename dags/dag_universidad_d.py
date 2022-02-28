@@ -7,6 +7,10 @@ from os import environ, path
 from dotenv import load_dotenv
 import pandas as pd
 import sqlalchemy as db
+from time import strftime
+from datetime import timedelta, datetime
+from airflow import DAG   
+from airflow.operators.dummy import DummyOperator
 
 logging.basicConfig(level=logging.INFO, datefmt=strftime("%Y-%m-%d"),
                     format='%(asctime)s - %(name)s - %(message)s')
@@ -19,9 +23,9 @@ folder = path.abspath(path.join(path.dirname( __file__ ), '..'))
 #configuro los retries acorde a lo que pide la tarea
 args = {
     'retries': 5,
-    'retry_delay': timedelta(minutes=5),
-    
+    'retry_delay': timedelta(minutes=5),   
 }
+
 #Configuracion de BD
 def connection():
     """
@@ -76,16 +80,39 @@ def crear_csv():
     extract('query_utn','csv_utn')
     extract('query_tres_de_febrero','csv_tres_de_febrero')
 
-dag = DAG(
-    dag_id='dag_universidad_d', 
-    default_args=args,
-    schedule_interval=timedelta(minutes=5),
-    start_date= datetime(2022,2,24)
-    ) 
-task_1= PythonOperator(
-    task_id='crear_csv',
-    python_callable=crear_csv,
-    dag=dag
-)
+with DAG(
+    dag_id = "ETL_para_dos_universidades", 
+    description = "ETL para dos universidades",
+    schedule_interval = "@hourly",
+    start_date = datetime(2002,2,18)
+    ) as dags:
+    """
+    Se harán dos consultas SQL para dos universidades: UTN y Tres de Febrero
+    usaremos los siguientes operadores:
+        airflow.providers.postgres.operators.postgres -> PostgresOperator
+    
+    Procesamiento de los datos:
+        airflow.operators.python_operator -> PythonOperator
+    
+    Carga de datos a S3:
+        airflow.providers.amazon.aws.operators.s3
+    """
+    sql_query_utn = DummyOperator(task_id = "sql_query_utn")
+    sql_query_tres_de_febrero = DummyOperator(task_id = "sql_query_tres_de_febrero")
 
-[task_1]
+    procesar_utn = DummyOperator(task_id="procesar_utn")
+    procesar_tres_de_febrero = DummyOperator(task_id="procesar_tres_de_febrero")
+
+    uploads3_utn = DummyOperator(task_id="uploads3_utn")
+    uploads3_tres_de_febrero = DummyOperator(task_id="uploads3_tres_de_febrero")
+    
+    generar_csv= PythonOperator(
+    task_id='generar_csv',
+    python_callable=crear_csv,
+    dag=dags
+    )
+
+    sql_query_utn >> procesar_utn >> uploads3_utn
+    sql_query_tres_de_febrero >> procesar_tres_de_febrero >> uploads3_tres_de_febrero
+    generar_csv
+
