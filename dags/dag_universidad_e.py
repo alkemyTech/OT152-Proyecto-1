@@ -1,31 +1,80 @@
+from os import path
+
 from datetime import timedelta, datetime
+
+import logging
+
+import pandas as pd
+
 from airflow import DAG
 from airflow.operators.dummy import DummyOperator
-import logging
+from airflow.operators.python import PythonOperator
+
+from sqlalchemy import create_engine
+from sqlalchemy.sql import text
+
+from decouple import config
+
+# Credential loading from .env file
+DB_USER = config('DB_USER')
+DB_PASSWORD = config('DB_PASSWORD')
+DB_HOST = config('DB_HOST')
+DB_PORT = config('DB_PORT')
+DB_NAME = config('DB_NAME')
+DB_TYPE = config('DB_TYPE')
+
+# Start Engine for DataBase connection
+engine = create_engine(
+    f'{DB_TYPE}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}')
+
+# Path of folder dags
+basepath = path.dirname(__file__)
+
+
+def query(*args):
+    """
+    This function querys the database of a given university, and stores the data in a .csv file in folder csv
+    Args: list containg only the name of the university to query
+    """
+
+    university = args[0]
+    # File path of the .sql needed to exectute the query
+    filepath = path.abspath(path.join(basepath, f'../sql/query_{university}.sql'))
+
+    with engine.begin():
+        # open and read sql file for query statement
+        file = open(filepath, 'r')
+        pampa_query = text(file.read())
+
+        # Query and store data to csv file
+        pampa_df = pd.read_sql_query(pampa_query, con=engine)
+        pampa_df.to_csv(f'airflow/dags/OT152-Proyecto-1/csv/universidad_{university}.csv')
 
 
 default_args = {
-    "retries": 5, #set retries at 5 according to the task 
-    "retry_delay": timedelta(minutes=5) 
+    "retries": 5,  # set retries at 5 according to the task
+    "retry_delay": timedelta(minutes=5)
 }
 
-#config logging
+# config logging
 logging.basicConfig(
-    filename='test.log', 
-    format='%(asctime)s - %(name)s - %(message)s', 
+    filename='test.log',
+    format='%(asctime)s - %(name)s - %(message)s',
     datefmt='%Y-%m-%d',
     level=logging.INFO)
-logger= logging.getLogger('universidad_e')
+logger = logging.getLogger('universidad_e')
 
 with DAG(
-    'Universidades_E',
-    description='OT152-228',
-    schedule_interval=timedelta(hours=1),   
-    start_date=datetime(2022, 2, 18)
+        'Universidades_E',
+        description='OT152-228',
+        schedule_interval=timedelta(hours=1),
+        start_date=datetime(2022, 2, 23)
 ) as dag:
-    query_pampa = DummyOperator(task_id='query_pampa')  #Voy a usar un  PostgresOperator para ejecutar la querie
-    query_interamericana = DummyOperator(task_id='query_interamericana') #Voy a usar un  PostgresOperator para ejecutar la querie
-    procesamiento_datos = DummyOperator(task_id='procesamiento_datos') #Voy a usar un PythonOperator para procesar los datos
-    subir_s3 = DummyOperator(task_id='subir_s3') #Voy a usar un S3 operator para subir los datos a S3
+    query_pampa = PythonOperator(task_id='query_pampa', python_callable=query, op_args=['pampa'], dag=dag)  # Voy a usar un  PostgresOperator para ejecutar la querie
+    query_interamericana = PythonOperator(
+        task_id='query_interamericana', python_callable=query, op_args=['interamericana'], dag=dag)  # Voy a usar un  PostgresOperator para ejecutar la querie
+    procesamiento_datos = DummyOperator(
+        task_id='procesamiento_datos')  # Voy a usar un PythonOperator para procesar los datos
+    subir_s3 = DummyOperator(task_id='subir_s3')  # Voy a usar un S3 operator para subir los datos a S3
 
     [query_pampa, query_interamericana] >> procesamiento_datos >> subir_s3
