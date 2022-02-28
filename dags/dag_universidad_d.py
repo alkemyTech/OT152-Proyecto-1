@@ -40,17 +40,22 @@ dag = DAG(
     start_date= datetime(2022,2,24)
     )
 
-def etl_extract():
-    file=folder+ '/sql/query_utn.sql'
+def extract(name_query,name_csv):
+    file=folder+ '/sql/'+ name_query+'.sql'
     with open(file) as f:
         query = f.read()
     f.close()
     con=connection()
     df_raw= pd.read_sql_query(query, con)
-    df_raw.to_csv(folder+ '/csv/utn.csv')
+    df_raw.to_csv(folder+ '/csv/' + name_csv+'.csv')
+
+def crear_csv():
+    extract('query_utn','csv_utn')
+    extract('query_tres_de_febrero','csv_tres_de_febrero')
+    
 task_1= PythonOperator(
-    task_id='extract_utn',
-    python_callable=etl_extract,
+    task_id='crear_csv',
+    python_callable=crear_csv,
     dag=dag
 )
 
