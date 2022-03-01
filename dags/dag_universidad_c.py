@@ -78,8 +78,51 @@ def limpiar_string(df):
     return df
 #def convertir_name(df):
 
-def limpiar_string(df):
-    df=df.str.lower().str.replace('_',' ').str.strip()
+def transform(df):
+    """
+    separa el nombre en dos columnas, hace conversion de sexo m=male y f=female, calcula la edad 
+    y busca la localidad con la localidad haciendo un merge con el archivo que se encuentra en
+    /csv/codigos_postales.csv
+        
+    Args:
+        df(serie Pandas): nombre del dataframe que se quiere transformar
+    
+    Return:
+        df(serie Pandas): Dataframe transformado
+    """
+
+    df['universidad']=limpiar_string(df['universidad'])
+    df['carrera']= limpiar_string(df['carrera'])
+    df['email']= limpiar_string(df['email'])
+        
+    #separa el nombre en dos columnas
+    df['nombre']=df['nombre'].str.replace(' ','_') #normaliza el nombre con "_"
+    nombre=df['nombre'].str.split('_', expand=True)
+    df['first_name']= nombre[0]
+    df['last_name']= nombre[1]
+    df.drop(columns=['nombre'],inplace=True)
+    df['first_name']= limpiar_string(df['first_name'])
+    df['last_name']=limpiar_string(df['last_name'])
+    
+    #convertir sexo m=male y f=female
+    df['sexo']=df['sexo'].str.replace('m', 'male')
+    df['sexo']=df['sexo'].str.replace('f', 'female')
+    
+    #Calculo de la edad
+    hoy=datetime.now()  
+    df['age']=hoy- df.fecha_de_nacimiento
+    df['age']= (df['age']/ np.timedelta64(1, 'Y')).astype(int)
+    
+    #calculo de localidad
+    if 'codigo_postal' in df.columns:
+        df_postal=pd.read_csv(f'{folder}/csv/codigos_postales.csv',
+                              dtype={'codigo_postal':'str'})
+        print('------')
+        print(df_postal.dtypes)
+        print('------')
+        print(df.dtypes)
+        df=df.merge(df_postal, on='codigo_postal')
+    
     return df
 
 def load():
