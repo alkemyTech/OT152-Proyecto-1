@@ -76,8 +76,9 @@ def limpiar_string(df):
     """
     df=df.str.lower().str.replace('_',' ').str.strip()
     return df
+#def convertir_name(df):
 
-def transform(df):
+def limpiar_string(df):
     df['universidad']=df['universidad'].str.lower().replace('_',' ').str.strip()
     df['carrera']= df['carrera'].str.lower()
 
