@@ -1,2 +1,5 @@
 test.py
 template.env
+__pycache__
+*.pyc
+test.py
