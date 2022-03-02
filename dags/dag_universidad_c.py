@@ -117,12 +117,7 @@ def transform(df):
     if 'codigo_postal' in df.columns:
         df_postal=pd.read_csv(f'{folder}/csv/codigos_postales.csv',
                               dtype={'codigo_postal':'str'})
-        print('------')
-        print(df_postal.dtypes)
-        print('------')
-        print(df.dtypes)
         df=df.merge(df_postal, on='codigo_postal')
-    
     return df
 
 def load():
