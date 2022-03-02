@@ -43,8 +43,13 @@ def connection():
 
     #Genera la conexion de la base de datos segun las credenciales
     path =f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
-    con = db.create_engine(path, echo=True)
-    return con
+    try:
+        con = db.create_engine(path, echo=True)
+        logger.info('conexion a la BD')
+        return con
+    except Exception as error:
+        logger.error(error)
+        raise error
 
 def extract(name_query):
     """
@@ -61,6 +66,7 @@ def extract(name_query):
     f.close()
     con=connection()
     df_raw= pd.read_sql_query(query, con)
+    
     return df_raw
 
 def limpiar_string(df):
@@ -113,10 +119,11 @@ def transform(df):
     df['age']= (df['age']/ np.timedelta64(1, 'Y')).astype(int)
     
     #calculo de localidad
-    if 'codigo_postal' in df.columns:
-        df_postal=pd.read_csv(f'{folder}/csv/codigos_postales.csv',
-                              dtype={'codigo_postal':'str'})
-        df=df.merge(df_postal, on='codigo_postal')
+    # if 'codigo_postal' in df.columns:
+    #     df_postal=pd.read_csv(f'{folder}/csv/codigos_postales.csv',
+    #                           dtype={'codigo_postal':'str'})
+    #     df=df.merge(df_postal, on='codigo_postal')
+    # logging.info(df)
     return df
 
 def load(df,file):
@@ -131,11 +138,13 @@ def load(df,file):
     df.to_csv(f'{folder}/txt/{file}.txt')
 def etl():
     #ejecuta query de Jujuy
+    logging.info('jujuy')
     df_raw= extract('query_jujuy')
     df = transform(df_raw)
     load(df, 'txt_jujuy')
 
     #ejecuta query de Palermo
+    logging.info('palermo')
     df_raw= extract('query_palermo')
     df = transform(df_raw)
     load(df, 'txt_palermo')
