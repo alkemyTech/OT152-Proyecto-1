@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 import pandas as pd
 import sqlalchemy as db
 from airflow.operators.python_operator import PythonOperator
+import numpy as np
 
 #Configuro los loggs acorde a lo que pide la tarea
 logging.basicConfig(level=logging.DEBUG, 
@@ -50,14 +51,13 @@ def connection():
     except Exception as error:
         logger.error(error)
         raise error
-
-def extract(name_query):
+def extract(name_query, format_date):
     """
     Lee query localizada en path /sql/{name_query} y lo transforma en un dataframe
     
     Args:
         name_query(str): nombre de la query localizada en path /sql/{name_query}
-            
+        format_date(str): formato como esta definida la fecha de nacimiento
     Return:
         df (dataframe pandas): dataframe extraido de la query
     """
@@ -65,10 +65,10 @@ def extract(name_query):
         query = f.read()
     f.close()
     con=connection()
-    df_raw= pd.read_sql_query(query, con)
+    df_raw= pd.read_sql_query(query, con, 
+                              parse_dates={'fecha_de_nacimiento':format_date})
     
     return df_raw
-
 def limpiar_string(df):
     """
     Lee la serie y limpia el str minúsculas, sin espacios extras, ni guiones
@@ -81,8 +81,6 @@ def limpiar_string(df):
     """
     df=df.str.lower().str.replace('_',' ').str.strip()
     return df
-#def convertir_name(df):
-
 def transform(df):
     """
     separa el nombre en dos columnas, hace conversion de sexo m=male y f=female, calcula la edad 
@@ -119,13 +117,12 @@ def transform(df):
     df['age']= (df['age']/ np.timedelta64(1, 'Y')).astype(int)
     
     #calculo de localidad
-    # if 'codigo_postal' in df.columns:
-    #     df_postal=pd.read_csv(f'{folder}/csv/codigos_postales.csv',
-    #                           dtype={'codigo_postal':'str'})
-    #     df=df.merge(df_postal, on='codigo_postal')
-    # logging.info(df)
+    if 'codigo_postal' in df.columns:
+        df_postal=pd.read_csv(f'{folder}/csv/codigos_postales.csv',
+                              dtype={'codigo_postal':'str'})
+        df=df.merge(df_postal, on='codigo_postal')
+    logging.info(df)
     return df
-
 def load(df,file):
     """
     Convierte un dataframe en un txt y lo guarda en la ruta /txt/{file}.txt
@@ -139,13 +136,13 @@ def load(df,file):
 def etl():
     #ejecuta query de Jujuy
     logging.info('jujuy')
-    df_raw= extract('query_jujuy')
+    df_raw= extract('query_jujuy','%Y/%m/%d')
     df = transform(df_raw)
     load(df, 'txt_jujuy')
 
     #ejecuta query de Palermo
     logging.info('palermo')
-    df_raw= extract('query_palermo')
+    df_raw= extract('query_palermo', '%d/%b/%y')
     df = transform(df_raw)
     load(df, 'txt_palermo')
     
