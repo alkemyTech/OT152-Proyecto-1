@@ -46,23 +46,22 @@ def connection():
     con = db.create_engine(path, echo=True)
     return con
 
-def extract(name_query,name_txt):
+def extract(name_query):
     """
-    Lee query localizada en path /sql y genera archivo .txt
+    Lee query localizada en path /sql/{name_query} y lo transforma en un dataframe
     
     Args:
-        name_query(str): nombre de la query localizada en path /sql
-        name_csv(str): nombre que se le va a dar a csv generado
-    
+        name_query(str): nombre de la query localizada en path /sql/{name_query}
+            
     Return:
-        file: txt generado en la ruta /txt/name_txt
+        df (dataframe pandas): dataframe extraido de la query
     """
     with open(f'{folder}/sql/{name_query}.sql') as f:
         query = f.read()
     f.close()
     con=connection()
     df_raw= pd.read_sql_query(query, con)
-    df_raw.to_csv(f'{folder}/txt/{name_txt}.txt')
+    return df_raw
 
 def limpiar_string(df):
     """
@@ -120,18 +119,27 @@ def transform(df):
         df=df.merge(df_postal, on='codigo_postal')
     return df
 
-def load():
+def load(df,file):
     """
-    Ejecuta la extraccion de las universidades UTN y Tres de Febrero
+    Convierte un dataframe en un txt y lo guarda en la ruta /txt/{file}.txt
     
     Args:
         None
     Return:
-        /csv/csv_utn.csv
-        /csv/csv_tres_de_febrero.csv
+        archivo txt en /txt/{file}.txt
     """
-    extract('query_jujuy','txt_jujuy')
-    extract('query_palermo','txt_palermo')
+    df.to_csv(f'{folder}/txt/{file}.txt')
+def etl():
+    #ejecuta query de Jujuy
+    df_raw= extract('query_jujuy')
+    df = transform(df_raw)
+    load(df, 'txt_jujuy')
+
+    #ejecuta query de Palermo
+    df_raw= extract('query_palermo')
+    df = transform(df_raw)
+    load(df, 'txt_palermo')
+    
 with DAG(
     'universidades_c',
     description='university_processes',
@@ -153,9 +161,10 @@ with DAG(
     
     universidad_jujuy= DummyOperator(task_id='universidad_jujuy')
     universidad_de_palermo= DummyOperator(task_id='universidad_de_Palermo')
+    
     generar_txt= PythonOperator(
     task_id='generar_txt',
-    python_callable=crear_txt,
+    python_callable=etl,
     dag=dag)
 
     universidad_jujuy >> universidad_de_palermo
