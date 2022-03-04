@@ -1,4 +1,5 @@
-from os import path
+
+from os import path, makedirs
 
 from datetime import timedelta, datetime
 
@@ -15,20 +16,23 @@ from sqlalchemy.sql import text
 
 from decouple import config
 
-# Credential loading from .env file
-DB_USER = config('DB_USER')
-DB_PASSWORD = config('DB_PASSWORD')
-DB_HOST = config('DB_HOST')
-DB_PORT = config('DB_PORT')
-DB_NAME = config('DB_NAME')
-DB_TYPE = config('DB_TYPE')
 
-# Start Engine for DataBase connection
-engine = create_engine(
-    f'{DB_TYPE}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}')
+def start_engine():
+    """
+    This function takes no arguments, returns engine to conect to DataBase
 
-# Path of folder dags
-basepath = path.dirname(__file__)
+    Returns: sqlarchemy engine
+    """
+    # Credential loading from .env file
+    DB_USER = config('DB_USER')
+    DB_PASSWORD = config('DB_PASSWORD')
+    DB_HOST = config('DB_HOST')
+    DB_PORT = config('DB_PORT')
+    DB_NAME = config('DB_NAME')
+    DB_TYPE = config('DB_TYPE')
+
+    # Start Engine for DataBase connection
+    return create_engine(f'{DB_TYPE}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}')
 
 
 def query(*args):
@@ -38,17 +42,27 @@ def query(*args):
     """
 
     university = args[0]
-    # File path of the .sql needed to exectute the query
-    filepath = path.abspath(path.join(basepath, f'../sql/query_{university}.sql'))
 
+    # Path of proyect folder
+    basepath = path.abspath(path.join(path.dirname(__file__), '..'))
+
+    # File path of the .sql needed to exectute the query
+    slqpath = path.abspath(path.join(basepath, f'sql/query_{university}.sql'))
+
+    # Start engine for Database Conection
+    engine = start_engine()
     with engine.begin():
         # open and read sql file for query statement
-        file = open(filepath, 'r')
-        pampa_query = text(file.read())
+        with open(slqpath, 'r') as file:
+            sql_query = text(file.read())
 
+        # Safe create csv folder for csv files
+        csvpath = path.join(basepath, 'csv')
+        if not path.exists(csvpath):
+            makedirs(csvpath)
         # Query and store data to csv file
-        pampa_df = pd.read_sql_query(pampa_query, con=engine)
-        pampa_df.to_csv(f'airflow/dags/OT152-Proyecto-1/csv/universidad_{university}.csv')
+        university_df = pd.read_sql_query(sql_query, con=engine)
+        university_df.to_csv(f'airflow/dags/OT152-Proyecto-1/csv/universidad_{university}.csv')
 
 
 default_args = {
