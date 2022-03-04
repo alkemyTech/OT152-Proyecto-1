@@ -8,7 +8,9 @@ from sqlalchemy import engine
 from os import path
 import pandas as pd
 import sqlalchemy 
-
+import os
+from os import remove
+from os import mkdir
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(message)s',  
@@ -22,28 +24,29 @@ default_args = {
     'retry_delay':timedelta(minutes=5)
 }
 
-#Configuro la conexion a la base de datos
-DB_USER = config('DB_USER')
-DB_PASSWORD = config('DB_PASSWORD')
-DB_HOST = config('DB_HOST')
-DB_PORT = config('DB_PORT')
-DB_NAME = config('DB_NAME')
-DB_TYPE = config('DB_TYPE')
 
-conexion = f'{DB_TYPE}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
-engine = sqlalchemy.create_engine(conexion)
-conn = engine.connect()
-
-
-#Extraigo las tablas de las consultas y las guardo en un csv
-root_folder = path.abspath(path.join(path.dirname(__file__), '..'))
 
 def save_to_csv(university):
-    file = open(f'{root_folder}/sql/{university}.sql', "r")
-    query = sqlalchemy.text(file.read())
-    data = pd.read_sql_query(query, conn)
+#Configuro la conexion a la base de datos
+    DB_USER = config('DB_USER')
+    DB_PASSWORD = config('DB_PASSWORD')
+    DB_HOST = config('DB_HOST')
+    DB_PORT = config('DB_PORT')
+    DB_NAME = config('DB_NAME')
+    DB_TYPE = config('DB_TYPE')
 
-    data.to_csv(f'{root_folder}/csv/universidad_{university}.csv', index=False)
+    conexion = f'{DB_TYPE}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+    engine = sqlalchemy.create_engine(conexion)
+    conn = engine.connect()
+#Extraigo las tablas de las consultas y las guardo en un csv
+    root_folder = path.abspath(path.join(path.dirname(__file__), '..'))
+    with open(f'{root_folder}/sql/{university}.sql', "r") as f:
+        query = f.read()
+        data = pd.read_sql_query(query, conn) 
+        if path.exists(f'{root_folder}/csv'):
+            remove(f'{root_folder}/csv') 
+        mkdir(f'{root_folder}/csv')
+        data.to_csv(f'{root_folder}/csv/universidad_{university}.csv', index=False)
 
 
 with DAG(
@@ -53,10 +56,9 @@ with DAG(
     start_date=(datetime(2022, 2, 18)) # Fecha de inicio
 ) as dag:
     # Tareas a ejecutar leyendo sql con pandas
-    tarea1 = DummyOperator(task_id='ETL_comahue')
-    tarea2 = DummyOperator(task_id='ETL_salvador')
-    save_to_csv = PythonOperator(task_id='Universidades_B_data', python_callable=save_to_csv, dag=dag)
+    tarea1 = PythonOperator(task_id='Query_comahue', python_callable=save_to_csv, op_args=["comahue"], dag=dag)
+    tarea2 = PythonOperator(task_id='Query_salvador', python_callable=save_to_csv, op_args=["salvador"], dag=dag)
 
 
-    # Orden de tareas
-    tarea1 >> tarea2
+# Orden de tareas
+tarea1 >> tarea2
