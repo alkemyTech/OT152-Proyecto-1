@@ -23,8 +23,6 @@ default_args = {
 }
 #configura path raiz para mover dentro del proyecto
 folder = path.abspath(path.join(path.dirname( __file__ ), '..'))
-
-
 def limpiar_string(df):
     """
     Lee la serie y limpia el str minúsculas, sin espacios extras, ni guiones
@@ -78,7 +76,6 @@ def transform(df):
         df=df.merge(df_postal, on='codigo_postal')
     logging.info(df)
     return df
- 
 def read_csv(name_csv):
     """
     lee el archivo name_csv y retorna el dataframe
@@ -112,11 +109,7 @@ with DAG(
     schedule_interval=timedelta(hours=1),
     start_date=datetime(2022,2,18)
     ) as dag:
-    
-    
-    
-    
-    
+       
     universidad_nacional = DummyOperator(task_id='universidad_nacional')
     universidad_de_palermo= DummyOperator(task_id='universidad_de_Palermo')
     
