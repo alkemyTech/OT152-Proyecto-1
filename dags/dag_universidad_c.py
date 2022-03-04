@@ -6,7 +6,6 @@ from airflow.operators.dummy import DummyOperator
 import pandas as pd
 from os import environ, path
 from dotenv import load_dotenv
-import pandas as pd
 import sqlalchemy as db
 from airflow.operators.python_operator import PythonOperator
 import numpy as np
@@ -25,50 +24,7 @@ default_args = {
 #configura path raiz para mover dentro del proyecto
 folder = path.abspath(path.join(path.dirname( __file__ ), '..'))
 
-def connection():
-    """
-    Crea la conexion de la BD postgres segun las credeciales del archivo template.env que debe estar de manera local
-    Args:
-        None
-    Return:
-        Engine Instance: retorna la conexion
-    """
-    #carga las credenciales en template.env
-    file=folder+ '/template.env'
-    load_dotenv(dotenv_path=file)
-    DB_USER = environ.get('DB_USER')
-    DB_PASSWORD =environ.get('DB_PASSWORD')
-    DB_HOST = environ.get('DB_HOST')
-    DB_PORT = environ.get('DB_PORT')
-    DB_NAME = environ.get('DB_NAME')
 
-    #Genera la conexion de la base de datos segun las credenciales
-    path =f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
-    try:
-        con = db.create_engine(path, echo=True)
-        logger.info('conexion a la BD')
-        return con
-    except Exception as error:
-        logger.error(error)
-        raise error
-def extract(name_query, format_date):
-    """
-    Lee query localizada en path /sql/{name_query} y lo transforma en un dataframe
-    
-    Args:
-        name_query(str): nombre de la query localizada en path /sql/{name_query}
-        format_date(str): formato como esta definida la fecha de nacimiento
-    Return:
-        df (dataframe pandas): dataframe extraido de la query
-    """
-    with open(f'{folder}/sql/{name_query}.sql') as f:
-        query = f.read()
-    f.close()
-    con=connection()
-    df_raw= pd.read_sql_query(query, con, 
-                              parse_dates={'fecha_de_nacimiento':format_date})
-    
-    return df_raw
 def limpiar_string(df):
     """
     Lee la serie y limpia el str minúsculas, sin espacios extras, ni guiones
@@ -93,7 +49,6 @@ def transform(df):
     Return:
         df(serie Pandas): Dataframe transformado
     """
-
     df['universidad']=limpiar_string(df['universidad'])
     df['carrera']= limpiar_string(df['carrera'])
     df['email']= limpiar_string(df['email'])
@@ -123,28 +78,32 @@ def transform(df):
         df=df.merge(df_postal, on='codigo_postal')
     logging.info(df)
     return df
-def load(df,file):
+ 
+def read_csv(name_csv):
     """
-    Convierte un dataframe en un txt y lo guarda en la ruta /txt/{file}.txt
-    
+    lee el archivo name_csv y retorna el dataframe
+        
     Args:
-        None
+        name_csv(str): nombre del csv a leer
+    
     Return:
-        archivo txt en /txt/{file}.txt
+        df(serie Pandas): Dataframe 
     """
-    df.to_csv(f'{folder}/txt/{file}.txt')
-def etl():
-    #ejecuta query de Jujuy
-    logging.info('jujuy')
-    df_raw= extract('query_jujuy','%Y/%m/%d')
-    df = transform(df_raw)
-    load(df, 'txt_jujuy')
-
+    df=pd.read_csv(f'{folder}/csv/{name_csv}.csv')
+    return df
+def load_txt():
+    
     #ejecuta query de Palermo
-    logging.info('palermo')
-    df_raw= extract('query_palermo', '%d/%b/%y')
+    df_raw= read_csv('palermo')
     df = transform(df_raw)
-    load(df, 'txt_palermo')
+    file='txt_palermo'
+    df.to_csv(f'{folder}/txt/{file}.txt')
+
+    #ejecuta query de UTN
+    df_raw= read_csv('naciona')
+    df = transform(df_raw)
+    file='txt_nacional'
+    df.to_csv(f'{folder}/txt/{file}.txt')
     
 with DAG(
     'universidades_c',
@@ -157,20 +116,21 @@ with DAG(
     
     
     #Queries
-    #SQL for Universidad Jujuy
+    #SQL for Universidad UTN
     #SQL for Universidad de Palermo
     
     #Data processing 
-    #pandas as pd 
     
-    #Upload data to S3    
     
-    universidad_jujuy= DummyOperator(task_id='universidad_jujuy')
+    universidad_nacional = DummyOperator(task_id='universidad_nacional')
     universidad_de_palermo= DummyOperator(task_id='universidad_de_Palermo')
     
     generar_txt= PythonOperator(
     task_id='generar_txt',
-    python_callable=etl,
+    python_callable=load_txt,
     dag=dag)
 
-    universidad_jujuy >> universidad_de_palermo
+    universidad_nacional >> universidad_de_palermo
+    generar_txt
+
+
