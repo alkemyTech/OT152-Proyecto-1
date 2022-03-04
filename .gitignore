@@ -2,3 +2,7 @@ test.py
 template.env
 *.csv
 *.txt
+__pycache__
+*.pyc
+
+
