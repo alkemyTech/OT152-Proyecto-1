@@ -92,15 +92,14 @@ def read_csv(name_csv):
     df=pd.read_csv(f'{folder}/csv/{name_csv}.csv')
     return df
 def load_txt():
-    
-    #ejecuta query de Palermo
+    #extrae csv de universidad de Palermo
     df_raw= read_csv('palermo')
     df = transform(df_raw)
     file='txt_palermo'
     df.to_csv(f'{folder}/txt/{file}.txt')
 
-    #ejecuta query de UTN
-    df_raw= read_csv('naciona')
+    #extrae csv de universidad de UTN
+    df_raw= read_csv('nacional')
     df = transform(df_raw)
     file='txt_nacional'
     df.to_csv(f'{folder}/txt/{file}.txt')
@@ -115,11 +114,7 @@ with DAG(
     ) as dag:
     
     
-    #Queries
-    #SQL for Universidad UTN
-    #SQL for Universidad de Palermo
     
-    #Data processing 
     
     
     universidad_nacional = DummyOperator(task_id='universidad_nacional')
