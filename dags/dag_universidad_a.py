@@ -1,34 +1,48 @@
-from datetime import datetime, timedelta
-
+from os import path
+from decouple import config
+from datetime import timedelta, datetime
+from time import strftime
+import logging
+import boto3
 from airflow import DAG
 from airflow.operators.dummy import DummyOperator
+from airflow.operators.python import PythonOperator
 
+logging.basicConfig(level=logging.DEBUG, 
+datefmt=strftime("%Y-%m-%d"), 
+format='%(asctime)s - %(name)s - %(message)s')
+
+logger = logging.getLogger('Universidades C')
 
 default_args = {
-    'retries': 5, # Quantity of retries before shutdown
-    'retry_delay': timedelta(minutes=5) # Wait time before next retry
+    'retries' : 5,
+    'retry_delay' : timedelta(minutes=5)
 }
 
+def upload_s3():
+    #declaring credentials
+    bucket_name = config('BUCKET_NAME')
+    s3 = boto3.client('s3',
+                      aws_access_key_id=config('AWS_ACCESS_KEY_ID'),
+                      ws_secret_access_key=config('AWS_SECRET_ACCESS_KEY')
+                      )
+    #folder path
+    folder = path.abspath(path.join(path.dirname(__file__), '..'))
+    with open(f'{folder}/txt/flores.txt', 'rb') as file:
+        #uploading file
+        s3.upload_fileobj(file, bucket_name, 'S3_flores.txt')
+    file.close()
+
 with DAG(
-    'Universities_A_dags',
-    description='Perfomrs ELT to two universities',
-    # Time between executions (1 hour)
+    'universidades_c',
+    description='university_processes',
+    default_args= default_args,
+    #defino ejecucion
     schedule_interval=timedelta(hours=1),
-    # Starting execution date
-    start_date=(datetime(2022, 2, 18))
-) as dag:
+    start_date=datetime(2022,3,4)
+    ) as dag:
 
-    # Tasks Univerdisdad las Flores
-    sql_universidad_flores = DummyOperator(task_id='sql_universidad_flores')
-    processing_universidad_flores = DummyOperator(task_id='processing_universidad_flores')
-    load_universidad_flores = DummyOperator(task_id='load_universidad_flores')
+    universidad_de_flores = DummyOperator(task_id='Universidad_de_flores')
+    upload_data = PythonOperator(task_id='uploading_to_s3', python_callable=upload_s3, dag=dag)
 
-    # Tasks Universidad Nacional de Villa Maria
-    sql_universidad_villa_maria = DummyOperator(task_id='ELT_Universidad_Nacional_De_Villa_Maria')
-    processing_universidad_villa_maria = DummyOperator(task_id='processing_universidad_villa_maria')
-    load_universidad_villa_maria = DummyOperator(task_id='load_universidad_villa_maria')
-
-    # Tasks order
-    sql_universidad_flores >> processing_universidad_flores >> load_universidad_flores
-
-    sql_universidad_villa_maria >> processing_universidad_villa_maria >> load_universidad_villa_maria
+    universidad_de_flores >> upload_data
