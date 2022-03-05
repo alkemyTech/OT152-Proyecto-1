@@ -98,8 +98,11 @@ with DAG(
     # Tareas a ejecutar leyendo sql con pandas
     tarea1 = DummyOperator(task_id='ETL_comahue')
     tarea2 = DummyOperator(task_id='ETL_salvador')
-    save_to_csv = PythonOperator(task_id='Universidades_B_data', python_callable=save_to_csv, dag=dag)
-    save_txt = PythonOperator(task_id='Universidades_B_TXT', python_callable=clean_and_save, dag=dag)
+    read_save_c = PythonOperator(task_id='Universidades_B_data', python_callable=save_to_csv, op_args=['comahue'], dag=dag)
+    read_save_s = PythonOperator(task_id='Universidades_B_data', python_callable=save_to_csv, op_args=['salvador'], dag=dag)
+    save_txt_comahue = PythonOperator(task_id='Universidades_B_TXT', python_callable=clean_and_save, op_args=['comahue'], dag=dag)
+    save_txt_salvador = PythonOperator(task_id='Universidades_B_TXT', python_callable=clean_and_save, op_args=['salvador'], dag=dag)
 
     # Orden de tareas
-    tarea1 >> tarea2 >> save_txt
+    tarea1 >> read_save_c >> save_txt_comahue
+    tarea2 >> read_save_s >> save_txt_salvador
