@@ -23,11 +23,23 @@ default_args = {
 }
 
 def load_s3():
+    """
+    sube archivo txt a repositorio s3
+        
+    Args:
+        None
+    
+    Return:
+        FIle load in s3 bucket
+    """
+    # cargas las credenciales  guardadas en template.env
     file=folder+ '/template.env'
     load_dotenv(dotenv_path=file)
     aws_access_key_id=environ.get('AWS_ACCESS_KEY_ID')
     aws_secret_access_key=environ.get('AWS_SECRET_ACCESS_KEY')
     bucket_name = environ.get('BUCKET_NAME')
+
+    #carga el archivo
     s3_client = boto3.client('s3', aws_access_key_id= aws_access_key_id,aws_secret_access_key=aws_secret_access_key)
     with open(f'{folder}/txt/txt_comahue.txt', 'rb') as f:
         s3_client.upload_fileobj(f, bucket_name,'txt_comahue.txt')
