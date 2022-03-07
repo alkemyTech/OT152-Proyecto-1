@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 from airflow.operators.python import PythonOperator
 import os
-
+from datetime import date
 import sqlalchemy
 import pandas as pd
 
@@ -36,68 +36,64 @@ def db_connection():
     return conexion    
     
 
-def extract(name_query,format_date):
-    with open (f'{root_folder}/sql/{name_query}.sql')as f:
-        query=f.read()
-    f.close()
-    conex = db_connection()
-    df_raw = pd.read_sql_query(query,conex,parse_dates={'fecha_de_nacicimiento':format_date})
-    return df_raw
-
-def clear_str(df):
-    df = df.str.lower().replace('_',' ').str.strip()
+def extract(name_query,):
+    df = pd.read_csv(f'{root_folder}/csv/')
     return df
-    
-def transform(df):
-    
-    df['university'] = clear_str(df['universidad'])
-    df['carer'] = clear_str(df['carrerra'])
-    df['inscription_date'] = clear_str(df['fechaiscripcion'])                                                                                                                                                                                                                          
 
-    df['postal_code'] = clear_str(df['codgoposstal'])
-    df['location'] = clear_str(df['location'])
-    df['email'] = clear_str(df['eemail'])
-    
-    """
-    df.rename({'universidad':'university','carrerra':'carer',
+def transform_moron(df_moron):
+    df_moron = pd.read_csv(f'{root_folder}/csv/moron.csv')
+    df_moron.rename({'universidad':'university','carrerra':'carer',
                'fechaiscripcion':'inscription_date',
                'sexo':'gender','codgoposstal':'postal_code',
                'eemail':'email'},inplace=True)
-    """
-    """
-    time_now = datetime.now()
-    df['age'] = time_now - df.nacimiento
-    df['age']= (df['age']/ np.timedelta64(1, 'Y')).astype(int)    
     
-    """
-    df['first_name'],df['last_name'] = df['nombrre'].str.split(' ',1).str
-    df['gender'] = df['sexo'].replace(['M','F'],['male','female'])
+    #Data processing
+    df_moron['nombrre'] = df_moron['nombrre'].str.replace(' ','_')
+    name = df_moron['nombrre'].str.split('_',expand=True)
+    df_moron['first_name'] = name[0]
+    df_moron['last_name'] = name[1]
+    df_moron['gender'] = df_moron['gender'].replace(['M','F'],['male','female'])
 
-    df.drop(columns=['nombrre','sexo'],inplace=True)
+    location = pd.read_csv(f'{root_folder}/csv/codigos_postales.csv')
+    df_moron['location'] = location['localidad']
+    df_moron.columns = [x.lower().replace(' ','_').strip("_") for x in df_moron.columns]
     
-    df['first_name'] = clear_str(df['first_name'])
-    df['last_name'] = clear_str(df['last_name'])
-    df['gender'] = clear_str(df['sexo'])
-    df['age'] = clear_str(df['age'])
+    #Removing extra columns
+    df_moron.drop(columns=['nombrre'],inplace=True)
 
+        
+    return df_moron
+
+def transform_rio_cuarto(df_rio_cuarto):
+    df_rio_cuarto.rename({'univiersities':'university','carrera':'carer',
+               'inscriptions_dates':'inscription_date',
+               'sexo':'gender','localidad':'location'},inplace=True)
     
-    if 'codigo_postal' in df.columns:
-        df_postal = pd.read_csv(f'{root_folder}/csv/codigos_postales.csv', 
-                                dtype={'codigo_postal': 'str'})
-        df = df.merge(df_postal, on = 'codigo_postal')
-    return df
+    df_rio_cuarto['gender'] = df_rio_cuarto['gender'].replace(['M','F'],['male','female'])
+    
+    #Clear columns df_rio_cuarto
+    df_rio_cuarto['names'] = df_rio_cuarto['names'].str.replace('-','_')
+    name = df_rio_cuarto['names'].str.split('_',expand=True)
+    df_rio_cuarto['first_name'] = name[0]
+    df_rio_cuarto['last_name'] = name[1]
+    df_rio_cuarto.columns = [x.lower().replace(' ','_').strip("_") for x in df_rio_cuarto]
+    
+    #Removin extra columns
+    df_rio_cuarto.drop(columns=['names'],inplace=True)
+ 
     
 def load(df,file):
-    df.to_csv(f'{root_folder}/txt/{file}.txt')
+    df.to_csv(f'{root_folder}/txt/{file}.txt',index=None)
 
 def _etl():
-    df_raw = extract('query_moron','%D/%m/%Y')
-    df = transform(df_raw)
-    load(df,'txt_moron')
+    moron_csv = extract('query_moron','%D/%m/%Y')
+
+    df_moron = transform_moron(moron_csv)
+    load(df_moron,'txt_moron')
     
-    df_raw = extract('query_rio_cuarto','%D/%m/%Y')
-    df = transform(df_raw)
-    load(df,'txt_rio_cuarto')
+    rio_cuarto_csv = extract('query_rio_cuarto','%D/%m/%Y')
+    df_rio_cuarto = transform_rio_cuarto(rio_cuarto_csv)
+    load(df_rio_cuarto,'txt_rio_cuarto')
     
     
     
