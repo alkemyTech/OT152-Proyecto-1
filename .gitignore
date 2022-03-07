@@ -1,6 +1,5 @@
 __pycache__
 *.pyc
 template.env
-template.env
-test.py
 *.csv
+*.txt
