@@ -81,7 +81,7 @@ with DAG(
     
     #Upload data to S3    
     
-    universidad_nacional= DummyOperator(task_id='universidad_nacional')
-    universidad_de_palermo = PythonOperator(task_id='universidad_de_Palermo', python_callable=upload_jujuy_s3)
+    universidad_nacional = PythonOperator(task_id='universidad_nacional', python_callable=upload_jujuy_s3)
+    universidad_de_palermo = DummyOperator(task_id='universidad_de_Palermo')
 
     universidad_nacional >> universidad_de_palermo
