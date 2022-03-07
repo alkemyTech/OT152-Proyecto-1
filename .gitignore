@@ -1,6 +1,5 @@
 __pycache__
 *.pyc
-test.py
-csv/*.csv
+*.csv
 *.env
 !template.env
