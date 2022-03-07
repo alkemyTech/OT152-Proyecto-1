@@ -36,8 +36,8 @@ def query_db(query,csv):
 
 
 def _create_csv():
-    query_db('query_latinoamericana','csv_latinoamericana')
-    query_db('query_kenedy','csv_kenedy')
+    query_db('query_latinoamericana','latinoamericana')
+    query_db('query_kenedy','kenedy')
 
 
 default_args = {
