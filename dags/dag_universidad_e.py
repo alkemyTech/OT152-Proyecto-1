@@ -62,7 +62,7 @@ def query(*args):
             makedirs(csvpath)
         # Query and store data to csv file
         university_df = pd.read_sql_query(sql_query, con=engine)
-        university_df.to_csv(f'airflow/dags/OT152-Proyecto-1/csv/universidad_{university}.csv')
+        university_df.to_csv(csvpath + f'/universidad_{university}.csv')
 
 
 default_args = {
