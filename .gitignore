@@ -1,0 +1,6 @@
+__pycache__
+*.pyc
+test.py
+csv/*.csv
+*.env
+!template.env
