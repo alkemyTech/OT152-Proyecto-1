@@ -1,12 +1,16 @@
 from datetime import timedelta, datetime
 import logging
 import boto3
-
 import os
+from os import path
+
+from dotenv import load_dotenv
+
 
 from airflow import DAG
 from airflow.operators.dummy import DummyOperator
-from more_itertools import bucket
+from airflow.operators.python import PythonOperator
+
 
 logging.basicConfig(level=logging.INFO, datefmt='%Y-%m-%d', format='%(asctime)s - %(name)s - %(message)s')
 logger = logging.getLogger('univ_f')
@@ -16,21 +20,24 @@ default_args = {
     "retry_delay": timedelta(minutes=10)  # wait 10 minutes to try again
 }
 
-def upload_txt():
+root_folder = path.abspath(path.join(path.dirname(__file__), ".."))
+file = root_folder +'/template.env'
+
+load_dotenv(dotenv_path=file)
+
+
+
+    
+def _upload_s3():
+    bucket_name = os.getenv('BUCKET_NAME')
     s3 = boto3.client(
         's3',
         aws_access_key_id=os.getenv('ACCESS_KEY'),
         aws_secret_access_key=os.getenv('SECRET_KEY'),
-        aws_session_token=os.getenv('SESSION_TOKEN'),
     )
-    """
-    with open (f'{}')
-    s3.meta.Client.upload_file()
     
-    """
-
-
-
+    with open (f'{root_folder}/txt/pampa.txt','rb') as file:
+        s3.upload_fileobj(file,bucket_name,'S3_Pampa.txt')    
 
 with DAG(
     'Query_Universidad_F',
@@ -40,8 +47,9 @@ with DAG(
 
 ) as dag:
     #Queries usando la función read_sql de pandas
-    tarea1 = DummyOperator(task_id='Query_F1') #Universidad de Morón
-    tarea2 = DummyOperator(task_id='Query_F2') #Universidad de Río Cuarto
-    tarea3 = DummyOperator(task_id='Processing_data')#Reading and processing data using read_sql
-    tarea4 = DummyOperator(task_id='Upload_S3')#uploading data to s3
-    [tarea1, tarea2] >> tarea3 >> tarea4
+    tarea1 = DummyOperator(task_id='query_F1') #Universidad de Morón
+    tarea2 = DummyOperator(task_id='query_F2') #Universidad de Río Cuarto
+    tarea3 = DummyOperator(task_id='processing_data')#Reading and processing data using read_sql
+    
+    upload_s3 = PythonOperator(task_id='upload_s3',python_callable=_upload_s3,dag=dag)#uploading data to s3
+    [tarea1, tarea2] >> tarea3 >> upload_s3
