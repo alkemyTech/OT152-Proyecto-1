@@ -1,5 +1,9 @@
 __pycache__
 *.pyc
 template.env
-template.env
 test.py
+*.csv
+txt/
+*.txt
+csv/
+.DS_Store

@@ -1,8 +1,12 @@
 from datetime import timedelta, datetime
 import logging
+import boto3
+
+import os
 
 from airflow import DAG
 from airflow.operators.dummy import DummyOperator
+from more_itertools import bucket
 
 logging.basicConfig(level=logging.INFO, datefmt='%Y-%m-%d', format='%(asctime)s - %(name)s - %(message)s')
 logger = logging.getLogger('univ_f')
@@ -11,6 +15,23 @@ default_args = {
     "retries": 5,  # try 5 times
     "retry_delay": timedelta(minutes=10)  # wait 10 minutes to try again
 }
+
+def upload_txt():
+    s3 = boto3.client(
+        's3',
+        aws_access_key_id=os.getenv('ACCESS_KEY'),
+        aws_secret_access_key=os.getenv('SECRET_KEY'),
+        aws_session_token=os.getenv('SESSION_TOKEN'),
+    )
+    """
+    with open (f'{}')
+    s3.meta.Client.upload_file()
+    
+    """
+
+
+
+
 with DAG(
     'Query_Universidad_F',
     description='Realizar consultas sobre Universidad de Moron y Rio Cuarto',
