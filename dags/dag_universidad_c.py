@@ -1,28 +1,11 @@
 import logging 
 from datetime import timedelta,datetime
-from time import strftime
 from airflow import DAG 
-from airflow.operators.dummy import DummyOperator
 import pandas as pd
-from os import environ, path
-from dotenv import load_dotenv
-import sqlalchemy as db
+from os import path
 from airflow.operators.python_operator import PythonOperator
 import numpy as np
 
-#Configuro los loggs acorde a lo que pide la tarea
-logging.basicConfig(level=logging.DEBUG, 
-datefmt=strftime("%Y-%m-%d"), 
-format='%(asctime)s - %(name)s - %(message)s')
-
-logger = logging.getLogger('Universidades C')
-
-default_args = {
-    'retries' : 5,
-    'retry_delay' : timedelta(minutes=5)
-}
-#configura path raiz para mover dentro del proyecto
-folder = path.abspath(path.join(path.dirname( __file__ ), '..'))
 def limpiar_string(df):
     """
     Lee la serie y limpia el str minúsculas, sin espacios extras, ni guiones
@@ -47,9 +30,11 @@ def transform(df):
     Return:
         df(serie Pandas): Dataframe transformado
     """
-    df['universidad']=limpiar_string(df['universidad'])
-    df['carrera']= limpiar_string(df['carrera'])
-    df['email']= limpiar_string(df['email'])
+    folder = path.abspath(path.join(path.dirname( __file__ ), '..'))
+    columnas= ['universidad','carrera', 'email','first_name', 'last_name']
+    #df['universidad']=df['universidad'].str.lower().str.replace('_',' ').str.strip()
+    #df['carrera']= df['carrera'].str.lower().str.replace('_',' ').str.strip()
+    #df['email']= df['email'].str.lower().str.replace('_',' ').str.strip()
         
     #separa el nombre en dos columnas
     df['nombre']=df['nombre'].str.replace(' ','_') #normaliza el nombre con "_"
@@ -59,7 +44,7 @@ def transform(df):
     df.drop(columns=['nombre'],inplace=True)
     df['first_name']= limpiar_string(df['first_name'])
     df['last_name']=limpiar_string(df['last_name'])
-    
+    df[columnas]=df[columnas].str.lower().str.replace('_',' ').str.strip()
     #convertir sexo m=male y f=female
     df['sexo']=df['sexo'].str.replace('m', 'male')
     df['sexo']=df['sexo'].str.replace('f', 'female')
@@ -76,30 +61,17 @@ def transform(df):
         df=df.merge(df_postal, on='codigo_postal')
     logging.info(df)
     return df
-def read_csv(name_csv):
-    """
-    lee el archivo name_csv y retorna el dataframe
-        
-    Args:
-        name_csv(str): nombre del csv a leer
-    
-    Return:
-        df(serie Pandas): Dataframe 
-    """
-    df=pd.read_csv(f'{folder}/csv/{name_csv}.csv')
-    return df
 def load_txt():
     #extrae csv de universidad de Palermo
-    df_raw= read_csv('palermo')
+    folder = path.abspath(path.join(path.dirname( __file__ ), '..'))
+    df_raw= pd.read_csv(f'{folder}/csv/palermo.csv')
     df = transform(df_raw)
-    file='txt_palermo'
-    df.to_csv(f'{folder}/txt/{file}.txt')
+    df.to_csv(f'{folder}/txt/txt_palermo.txt')
 
     #extrae csv de universidad de UTN
-    df_raw= read_csv('nacional')
+    df_raw= pd.read_csv(f'{folder}/csv/nacional.csv')
     df = transform(df_raw)
-    file='txt_nacional'
-    df.to_csv(f'{folder}/txt/{file}.txt')
+    df.to_csv(f'{folder}/txt/txt_nacional.txt')
     
 with DAG(
     'universidades_c',
@@ -109,16 +81,13 @@ with DAG(
     schedule_interval=timedelta(hours=1),
     start_date=datetime(2022,2,18)
     ) as dag:
-       
-    universidad_nacional = DummyOperator(task_id='universidad_nacional')
-    universidad_de_palermo= DummyOperator(task_id='universidad_de_Palermo')
-    
+   
+     
     generar_txt= PythonOperator(
     task_id='generar_txt',
     python_callable=load_txt,
     dag=dag)
-
-    universidad_nacional >> universidad_de_palermo
+ 
     generar_txt
 
 
