@@ -1,4 +1,5 @@
 import logging
+from pickle import TRUE
 from airflow import DAG
 from airflow.operators.dummy import DummyOperator
 from airflow.operators.python import PythonOperator
@@ -10,7 +11,6 @@ import pandas as pd
 import sqlalchemy 
 import os
 from os import remove
-from os import mkdir
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(message)s',  
@@ -40,12 +40,10 @@ def save_to_csv(university):
     conn = engine.connect()
 #Extraigo las tablas de las consultas y las guardo en un csv
     root_folder = path.abspath(path.join(path.dirname(__file__), '..'))
-    with open(f'{root_folder}/sql/{university}.sql', "r") as f:
+    os.makedirs(f'{root_folder}/csv', exist_ok = TRUE)
+    with open(f'{root_folder}/sql/query_{university}.sql', "r") as f:
         query = f.read()
         data = pd.read_sql_query(query, conn) 
-        if path.exists(f'{root_folder}/csv'):
-            remove(f'{root_folder}/csv') 
-        mkdir(f'{root_folder}/csv')
         data.to_csv(f'{root_folder}/csv/universidad_{university}.csv', index=False)
 
 
@@ -61,4 +59,4 @@ with DAG(
 
 
 # Orden de tareas
-tarea1 >> tarea2
+[tarea1, tarea2]
