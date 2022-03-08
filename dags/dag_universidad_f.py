@@ -26,11 +26,24 @@ logger = logging.getLogger('univ_f')
 root_folder = path.abspath(path.join(path.dirname(__file__), ".."))
 
 
-        
-def clean_string(x):
-        return x.lower().replace("-", "").strip()
+def clean_string(data):
+    """
+    Args:
+        data: data obtained from the dataframe
+    
+    Return:
+        Processed data
+    """
+    return data.lower().replace("-", "").strip()
     
 def _transform_moron():
+    """
+    Args:
+        None
+
+    Return:
+        file moron_txt 
+    """
     df_moron = pd.read_csv(f'{root_folder}/csv/moron.csv')
     
     if not path.exists(f'{root_folder}/txt'):
@@ -71,6 +84,14 @@ def _transform_moron():
     df_moron.to_csv(f'{root_folder}/txt/moron.txt',index=None)        
 
 def _transform_rio_cuarto():
+    """
+    Args:
+        None
+
+    Return:
+        file rio_cuarto_txt 
+    
+    """
     df_rio_cuarto = pd.read_csv(f'{root_folder}/csv/rio_cuarto.csv')
     
     if not path.exists(f'{root_folder}/txt'):
