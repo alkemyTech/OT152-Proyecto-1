@@ -17,15 +17,18 @@ file = folder +'/template.env'
 load_dotenv(dotenv_path=file)
 
 def db_connection():
-    server = os.getenv('SERVER')
-    host = os.getenv('HOST')
+    server = os.getenv('DB_HOST')
+    host = os.getenv('DB_PORT')
     db_user = os.getenv('DB_USER')
     db_password = os.getenv('DB_PASSWORD')
-    db = os.getenv('DB')
+    db = os.getenv('DB_NAME')
     
     conexion = psycopg2.connect(host=server, database=db,port=host,user=db_user,password=db_password)
+    print('Conexion exitosa')
     return conexion    
-    
+
+db_connection()
+
 def query_db(query,csv):
      with open(f'{folder}/sql/{query}.sql') as f:
         query = f.read()
