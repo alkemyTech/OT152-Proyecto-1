@@ -3,3 +3,4 @@ __pycache__
 template.env
 *.csv
 *.txt
+.DS_Store

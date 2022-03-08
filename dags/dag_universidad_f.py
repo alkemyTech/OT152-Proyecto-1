@@ -1,23 +1,13 @@
-from ast import Str
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime,date
 import logging
-from operator import index
-from unittest.util import strclass
-from decouple import config
-from os import makedirs, mkdir, path
-import psycopg2
-from dotenv import load_dotenv
-
+from os import makedirs, path
 from airflow.operators.python import PythonOperator
-import os
-from datetime import date
-import sqlalchemy
+
 import pandas as pd
 
 from airflow import DAG
 from airflow.operators.dummy import DummyOperator
-from matplotlib.pyplot import connect
-from uritemplate import expand
+
 
 logging.basicConfig(level=logging.INFO, datefmt='%Y-%m-%d', format='%(asctime)s - %(name)s - %(message)s')
 logger = logging.getLogger('univ_f')
@@ -35,6 +25,19 @@ def clean_string(data):
         Processed data
     """
     return data.lower().replace("-", "").strip()
+
+def age(born):
+    """
+    Args:
+        born: date of birth
+
+    Return:
+        age
+    """
+    born = datetime.strptime(born, "%d/%m/%Y").date()
+    today = date.today()
+    return today.year - born.year - ((today.month,today.day) < (born.month,born.day))
+
     
 def _transform_moron():
     """
@@ -74,12 +77,15 @@ def _transform_moron():
     df_moron.first_name = df_moron['first_name'].apply(clean_string)
     df_moron.last_name = df_moron['last_name'].apply(clean_string)
     df_moron.email = df_moron['email'].apply(clean_string)    
+    
+
+    df_moron['age'] = df_moron['nacimiento'].apply(age)
         
     location = pd.read_csv(f'{root_folder}/csv/codigos_postales.csv')
     df_moron['location'] = location['localidad'].apply(lambda x: x.lower().replace(" ",''))
 
     #Removing extra columns
-    df_moron.drop(columns=['nombrre'],inplace=True)
+    df_moron.drop(columns=['nombrre','nacimiento'],inplace=True)
     #Save to txt
     df_moron.to_csv(f'{root_folder}/txt/moron.txt',index=None)        
 
@@ -94,9 +100,11 @@ def _transform_rio_cuarto():
     """
     df_rio_cuarto = pd.read_csv(f'{root_folder}/csv/rio_cuarto.csv')
     
+    #if the folder path doesn't exist, create it
     if not path.exists(f'{root_folder}/txt'):
         makedirs(f'{root_folder}/txt')
         
+    
     df_rio_cuarto.rename(columns={'univiersities':'university','carrera':'carer',
                'inscription_dates':'inscription_date',
                'sexo':'gender','localidad':'location'},inplace=True)
@@ -106,6 +114,13 @@ def _transform_rio_cuarto():
     
     df_rio_cuarto.loc[gender_female, 'gender'] = 'female'
     df_rio_cuarto.loc[gender_male, 'gender'] = 'male'   
+    def age_rio_cuarto(born):
+        born = datetime.strptime(born, "%y/%b/%d").date()
+        today = date.today()
+        return today.year - born.year - ((today.month,today.day) < (born.month,born.day))
+
+    #applying function to calculate age
+    df_rio_cuarto['age'] = df_rio_cuarto['fechas_nacimiento'].apply(age_rio_cuarto)
     
     #Clear columns df_rio_cuarto
     df_rio_cuarto['names'] = df_rio_cuarto['names'].str.replace('-','_')
@@ -121,13 +136,12 @@ def _transform_rio_cuarto():
     df_rio_cuarto.location = df_rio_cuarto['location'].apply(clean_string)
     df_rio_cuarto.email = df_rio_cuarto['email'].apply(clean_string)
     
-    
     postal_code = pd.read_csv(f'{root_folder}/csv/codigos_postales.csv')
     df_rio_cuarto['postal_code'] = postal_code['codigo_postal']
     
 
     #Removin extra columns
-    df_rio_cuarto.drop(columns=['names'],inplace=True)
+    df_rio_cuarto.drop(columns=['names','fechas_nacimiento'],inplace=True)
     
     #Save to txt
     df_rio_cuarto.to_csv(f'{root_folder}/txt/rio_cuarto.txt',index=None)
