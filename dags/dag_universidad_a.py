@@ -10,7 +10,7 @@ from decouple import config
 from sqlalchemy import create_engine
 from sqlalchemy.sql import text
 
-def DB_connection():
+def db_connection():
     '''
     Connect to a Database
     '''
@@ -25,7 +25,7 @@ def DB_connection():
     db_url = f'postgresql+psycopg2://{user}:{password}@{host}:{port}/{database}'
     engine = create_engine(db_url)
 
-    return(engine_connect())
+    return(engine.connect())
 
 ## SQL query to csv file
 def query_csvfile(**kwargs):
@@ -34,7 +34,7 @@ def query_csvfile(**kwargs):
     INPUT: kwargs['sql_file'] = .sql file name (query file)
     OUTPUT: kwargs['file_name'] = name of .csv file with data table.    
     '''
-    conn = DB_connection()
+    conn = db_connection()
 
     # root folder
     root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
