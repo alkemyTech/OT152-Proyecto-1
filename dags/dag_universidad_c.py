@@ -80,10 +80,10 @@ with DAG(
     
     universidad_nacional = DummyOperator(task_id='universidad_nacional')
     universidad_de_palermo = DummyOperator(task_id='universidad_de_Palermo')
-    read_save_p = PythonOperator(task_id='palermo_read_save', python_callable=read_and_save, op_args=['palermo'], dag=dag) #adding the parameters needed to call the function
-    read_save_n = PythonOperator(task_id='nacional_read_save', python_callable=read_and_save, op_args=['nacional'], dag=dag) # same here.
+    read_save_p = PythonOperator(task_id='palermo_read_save', python_callable=read_and_save, op_args=['query_palermo'], dag=dag) #adding the parameters needed to call the function
+    read_save_j = PythonOperator(task_id='jujuy_read_save', python_callable=read_and_save, op_args=['query_jujuy'], dag=dag) # same here.
 
     #running in paralel the dag as sugested
-    universidad_nacional >> read_save_n
+    universidad_nacional >> read_save_j
     universidad_de_palermo >> read_save_p
     
