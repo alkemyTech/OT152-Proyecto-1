@@ -1,11 +1,11 @@
-from datetime import datetime
 from airflow import DAG
 from airflow.operators.dummy import DummyOperator
-import logging
-from datetime import timedelta
-import os 
-import psycopg2
 from airflow.operators.python import PythonOperator
+import logging
+from decouple import config
+
+import psycopg2
+from datetime import datetime,timedelta
 import pandas as pd
 from os import path
 from dotenv import load_dotenv
@@ -17,17 +17,14 @@ file = folder +'/template.env'
 load_dotenv(dotenv_path=file)
 
 def db_connection():
-    server = os.getenv('DB_HOST')
-    host = os.getenv('DB_PORT')
-    db_user = os.getenv('DB_USER')
-    db_password = os.getenv('DB_PASSWORD')
-    db = os.getenv('DB_NAME')
+    server = config('DB_HOST')
+    host = config('DB_PORT')
+    db_user = config('DB_USER')
+    db_password = config('DB_PASSWORD')
+    db = config('DB_NAME')
     
     conexion = psycopg2.connect(host=server, database=db,port=host,user=db_user,password=db_password)
-    print('Conexion exitosa')
-    return conexion    
-
-db_connection()
+    return conexion
 
 def query_db(query,csv):
      with open(f'{folder}/sql/{query}.sql') as f:
@@ -37,10 +34,6 @@ def query_db(query,csv):
         df_query= pd.read_sql_query(query, con)
         df_query.to_csv(f'{folder}/csv/{csv}.csv',index=False)
 
-
-def _create_csv():
-    query_db('query_latinoamericana','latinoamericana')
-    query_db('query_kenedy','kenedy')
 
 
 default_args = {
@@ -65,11 +58,18 @@ with DAG(
 
     tarea_1= DummyOperator(task_id='universidad_sociales') 
     tarea_2= DummyOperator(task_id='universidad_kenedy')
-    [tarea_1,tarea_2]
     
-    create_csv_file = PythonOperator(
+    csv_latinoamericana = PythonOperator(
         task_id='create_csv_file',
-        python_callable=_create_csv,
+        python_callable=query_db,
+        op_args=['query_latinoamericana','latinoamericana'],
         dag=dag
     )
-    create_csv_file
+    
+    csv_kennedy = PythonOperator(
+        task_id='csv_kennedy',
+        python_callable=query_db,
+        op_args=['query_kenedy','kenedy'],
+        dag=dag
+    )
+    [tarea_1 >> csv_latinoamericana],[tarea_2>>csv_kennedy]
