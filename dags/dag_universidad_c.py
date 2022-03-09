@@ -66,9 +66,7 @@ with DAG(
     #defino ejecucion
     schedule_interval=timedelta(hours=1),
     start_date=datetime(2022,2,18)
-    ) as dag:
-   
-     
+    ) as dag:    
     generar_txt= PythonOperator(
     task_id='generar_txt',
     python_callable=load_txt,
