@@ -38,7 +38,7 @@ def upload_jujuy_s3():
     # Folder path
     folder = path.abspath(path.join(path.dirname(__file__), '..'))
 
-    with open(f'{folder}/txt/jujuy.txt', 'rb') as file:
+    with open(f'{folder}/txt/txt_nacional.txt', 'rb') as file:
         try:
             s3.upload_fileobj(file, bucket_name, 'S3_jujuy.txt')
         except ClientError as error:
