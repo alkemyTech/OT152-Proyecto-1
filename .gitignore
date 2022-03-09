@@ -1,5 +1,7 @@
 __pycache__
 *.pyc
+*.txt
+!codigos_postales.csv
 *.csv
 *.env
 !template.env
