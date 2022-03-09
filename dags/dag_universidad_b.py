@@ -5,7 +5,7 @@ from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta, date
 from decouple import config
 from sqlalchemy import engine
-from os import path
+from os import path, makedirs
 import pandas as pd
 import sqlalchemy 
 
@@ -22,31 +22,14 @@ default_args = {
     'retry_delay':timedelta(minutes=5)
 }
 
-#Configuro la conexion a la base de datos
-DB_USER = config('DB_USER')
-DB_PASSWORD = config('DB_PASSWORD')
-DB_HOST = config('DB_HOST')
-DB_PORT = config('DB_PORT')
-DB_NAME = config('DB_NAME')
-DB_TYPE = config('DB_TYPE')
 
-conexion = f'{DB_TYPE}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
-engine = sqlalchemy.create_engine(conexion)
-conn = engine.connect()
-
-
-#Extraigo las tablas de las consultas y las guardo en un csv
 root_folder = path.abspath(path.join(path.dirname(__file__), '..'))
 
-def save_to_csv(university):
-    file = open(f'{root_folder}/sql/{university}.sql', "r")
-    query = sqlalchemy.text(file.read())
-    data = pd.read_sql_query(query, conn)
-
-    data.to_csv(f'{root_folder}/csv/universidad_{university}.csv', index=False)
-
-def clean_and_save(univeristy):
+def clean_and_save(university):
     
+    with open(f'{root_folder}/csv/{university}.csv') as file:
+        data=pd.read_csv(file)
+        
     #creating two columns from 'first_name' and 'last_name' from the column 'name'
     data['first_name'], data['last_name'] = data['name'].str.split(' ', 1).str
 
@@ -66,10 +49,9 @@ def clean_and_save(univeristy):
     data['gender'].replace(['F', 'M'], ['female', 'male'], inplace=True)
 
     #reading the csv files and creating a dataframe from it to make the merge respectively
-    df_postal=pd.read_csv('codigos_postales.csv')
+    df_postal=pd.read_csv(f'{root_folder}/csv/codigos_postales.csv')
     data['postal_code']=data['postal_code'].astype(int)
-    df_postal=pd.read_csv('codigos_postales.csv')
-
+    
     df_postal['postal_code']=df_postal['codigo_postal']
     df_postal.drop(columns=['codigo_postal'], inplace=True)
 
@@ -87,7 +69,12 @@ def clean_and_save(univeristy):
     #lambda function to make values in lowercase
     data=data.apply(lambda x: x.astype(str).str.lower())
 
-    data.to_csv(f'{root_folder}/txt/{univeristy}.txt', header=None, index=None, sep='\t', mode='a')
+    #creating a txt folder
+    txt_folder = path.join(root_folder, 'txt')
+    if not path.exists(txt_folder):
+        makedirs(txt_folder)
+            
+    data.to_csv(f'{root_folder}/txt/{university}.txt', sep='\t')
 
 with DAG(
     'Universities_B_dags',
@@ -95,14 +82,9 @@ with DAG(
     schedule_interval=timedelta(hours=1), # Ejecución cada hora
     start_date=(datetime(2022, 2, 18)) # Fecha de inicio
 ) as dag:
-    # Tareas a ejecutar leyendo sql con pandas
-    tarea1 = DummyOperator(task_id='ETL_comahue')
-    tarea2 = DummyOperator(task_id='ETL_salvador')
-    read_save_c = PythonOperator(task_id='Universidades_B_data', python_callable=save_to_csv, op_args=['comahue'], dag=dag)
-    read_save_s = PythonOperator(task_id='Universidades_B_data', python_callable=save_to_csv, op_args=['salvador'], dag=dag)
-    save_txt_comahue = PythonOperator(task_id='Universidades_B_TXT', python_callable=clean_and_save, op_args=['comahue'], dag=dag)
-    save_txt_salvador = PythonOperator(task_id='Universidades_B_TXT', python_callable=clean_and_save, op_args=['salvador'], dag=dag)
+   
+    save_txt_comahue = PythonOperator(task_id='Universidades_TXT_C', python_callable=clean_and_save, op_args=['universidad_comahue'], dag=dag)
+    save_txt_salvador = PythonOperator(task_id='Universidades_TXT_S', python_callable=clean_and_save, op_args=['universidad_salvador'], dag=dag)
 
     # Orden de tareas
-    tarea1 >> read_save_c >> save_txt_comahue
-    tarea2 >> read_save_s >> save_txt_salvador
+    [save_txt_comahue, save_txt_salvador]
