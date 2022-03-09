@@ -6,18 +6,6 @@ from os import path
 from airflow.operators.python_operator import PythonOperator
 import numpy as np
 
-def limpiar_string(df):
-    """
-    Lee la serie y limpia el str minúsculas, sin espacios extras, ni guiones
-        
-    Args:
-        df(serie Pandas): nombre del dataframe y serie ejemplo: DF['campo']
-    
-    Return:
-        df(serie Pandas): Serie Limpia
-    """
-    df=df.str.lower().str.replace('_',' ').str.strip()
-    return df
 def transform(df):
     """
     separa el nombre en dos columnas, hace conversion de sexo m=male y f=female, calcula la edad 
@@ -64,12 +52,12 @@ def transform(df):
 def load_txt():
     #extrae csv de universidad de Palermo
     folder = path.abspath(path.join(path.dirname( __file__ ), '..'))
-    df_raw= pd.read_csv(f'{folder}/csv/palermo.csv')
+    df_raw= pd.read_csv(f'{folder}/csv/query_palermo.csv', infer_datetime_format=True )
     df = transform(df_raw)
     df.to_csv(f'{folder}/txt/txt_palermo.txt')
 
     #extrae csv de universidad de UTN
-    df_raw= pd.read_csv(f'{folder}/csv/nacional.csv')
+    df_raw= pd.read_csv(f'{folder}/csv/query_utn.csv')
     df = transform(df_raw)
     df.to_csv(f'{folder}/txt/txt_nacional.txt')
     
