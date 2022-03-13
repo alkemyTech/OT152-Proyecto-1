@@ -5,10 +5,11 @@ from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta, date
 from decouple import config
 from sqlalchemy import engine
-from os import path, makedirs
+import os
+from os import path, makedirs, remove
 import pandas as pd
-import sqlalchemy 
-
+import sqlalchemy
+from pickle import TRUE
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(message)s',  
@@ -137,15 +138,38 @@ def clean_and_save_s(university):
     folder_txt()
     data.to_csv(f'{root_folder}/txt/{university}.txt', sep='\t', mode='a')
 
+
+def save_to_csv(university):
+#Configuro la conexion a la base de datos
+    DB_USER = config('DB_USER')
+    DB_PASSWORD = config('DB_PASSWORD')
+    DB_HOST = config('DB_HOST')
+    DB_PORT = config('DB_PORT')
+    DB_NAME = config('DB_NAME')
+    DB_TYPE = config('DB_TYPE')
+
+    conexion = f'{DB_TYPE}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+    engine = sqlalchemy.create_engine(conexion)
+    conn = engine.connect()
+#Extraigo las tablas de las consultas y las guardo en un csv
+    root_folder = path.abspath(path.join(path.dirname(__file__), '..'))
+    os.makedirs(f'{root_folder}/csv', exist_ok = TRUE)
+    with open(f'{root_folder}/sql/query_{university}.sql', "r") as f:
+        query = f.read()
+        data = pd.read_sql_query(query, conn) 
+        data.to_csv(f'{root_folder}/csv/universidad_{university}.csv', index=False)
+
+
 with DAG(
     'Universities_B_dags',
     description='Ejecuta ETL de las universidades B',
     schedule_interval=timedelta(hours=1), # Ejecución cada hora
     start_date=(datetime(2022, 2, 18)) # Fecha de inicio
 ) as dag:
-   
+    tarea1 = PythonOperator(task_id='Query_comahue', python_callable=save_to_csv, op_args=["comahue"], dag=dag)
+    tarea2 = PythonOperator(task_id='Query_salvador', python_callable=save_to_csv, op_args=["salvador"], dag=dag)   
     save_txt_comahue = PythonOperator(task_id='Universidades_TXT_C', python_callable=clean_and_save_c, op_args=['universidad_comahue'], dag=dag)
     save_txt_salvador = PythonOperator(task_id='Universidades_TXT_S', python_callable=clean_and_save_s, op_args=['universidad_salvador'], dag=dag)
 
     # Orden de tareas
-    [save_txt_comahue, save_txt_salvador]
+    [tarea1 >> save_txt_comahue, tarea2 >> save_txt_salvador]

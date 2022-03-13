@@ -1,5 +1,5 @@
 import logging
-from os import path
+from os import path, makedirs
 from datetime import timedelta, datetime
 from time import strftime
 
@@ -24,35 +24,41 @@ default_args = {
 }
 
 #setting up the connection to db:
+def connection(): #creating the function as sugested.
 
-DB_USER = config('DB_USER')
-DB_PASSWORD = config('DB_PASSWORD')
-DB_HOST = config('DB_HOST')
-DB_PORT = config('DB_PORT')
-DB_NAME = config('DB_NAME')
-DB_TYPE = config('DB_TYPE')
+    DB_USER = config('DB_USER')
+    DB_PASSWORD = config('DB_PASSWORD')
+    DB_HOST = config('DB_HOST')
+    DB_PORT = config('DB_PORT')
+    DB_NAME = config('DB_NAME')
+    DB_TYPE = config('DB_TYPE')
 
-secret = f'{DB_TYPE}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
-engine = sqlalchemy.create_engine(secret)
-conn = engine.connect()
+    secret = f'{DB_TYPE}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+    engine = sqlalchemy.create_engine(secret)
+    return engine.connect()
 
-#main folder
-
-folder = path.abspath(path.join(path.dirname( __file__ ), '..'))
 
 #uni stands for 'university'
 
-def read_and_save(uni_query, uni_csv):
+def read_and_save(uni_query):
+    conn=connection() #calling the function to connect to the db
 
-    file= open(f'{folder}/sql/{uni_query}')
+    #main folder
+    folder = path.abspath(path.join(path.dirname( __file__ ), '..'))
 
-    query = sqlalchemy.text(file.read())
-    data = pd.read_sql_query(query, conn)
+    with open(f'{folder}/sql/{uni_query}.sql') as file: #opening the file as sugested
 
-    print(data)
+        query = sqlalchemy.text(file.read())
+        data = pd.read_sql_query(query, conn)
 
-    data.to_csv(f'{folder}/csv/{uni_csv}')
+        csv_folder = path.join(folder, 'csv')
+        if not path.exists(csv_folder):
+            makedirs(csv_folder)
+        print(data)
 
+        data.to_csv(f'{folder}/csv/{uni_query}.csv')
+
+    file.close() #closing file as sugested
 
 with DAG(
     'universidades_c',
@@ -63,8 +69,6 @@ with DAG(
     start_date=datetime(2022,2,18)
     ) as dag:
     
-
-
     #Queries
     #SQL for Universidad Nacional
     #SQL for Universidad de Palermo
@@ -76,7 +80,9 @@ with DAG(
     
     universidad_nacional = DummyOperator(task_id='universidad_nacional')
     universidad_de_palermo = DummyOperator(task_id='universidad_de_Palermo')
-    read_save = PythonOperator(task_id='Query_and_save_csv', python_callable=read_and_save, dag=dag)
+    read_save_p = PythonOperator(task_id='palermo_read_save', python_callable=read_and_save, op_args=['query_palermo'], dag=dag) #adding the parameters needed to call the function
+    read_save_j = PythonOperator(task_id='jujuy_read_save', python_callable=read_and_save, op_args=['query_jujuy'], dag=dag) # same here.
 
-
-    universidad_nacional >> universidad_de_palermo >> read_save
+    #running in paralel the dag as sugested
+    universidad_nacional >> read_save_j
+    universidad_de_palermo >> read_save_p

@@ -1,0 +1,8 @@
+__pycache__
+*.pyc
+*.csv
+*.txt
+*.env
+.DS_Store
+!codigos_postales.csv
+!template.env
