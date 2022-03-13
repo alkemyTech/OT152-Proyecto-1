@@ -86,4 +86,3 @@ with DAG(
     #running in paralel the dag as sugested
     universidad_nacional >> read_save_j
     universidad_de_palermo >> read_save_p
-    
