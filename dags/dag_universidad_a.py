@@ -1,13 +1,13 @@
-from datetime import datetime, timedelta
-from airflow import DAG
-from airflow.operators.python import PythonOperator
 import logging
-import pandas as pd
-from decouple import config
-import sqlalchemy
 from os import path
 from os import remove
 from os import mkdir
+from datetime import datetime, timedelta
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+import pandas as pd
+from decouple import config
+import sqlalchemy
 
 
 def execute_queries(university):
@@ -37,13 +37,13 @@ def execute_queries(university):
 
 default_args = {
     'retries': 5,  # Quantity of retries before shutdown
-    'retry_delay': timedelta(minutes=5) # Wait time before next retry
+    'retry_delay': timedelta(minutes=5)  # Wait time before next retry
 }
 
 
 # create logger
 FORMAT = '%(asctime)s - %(name)s - %(message)s'
-logging.basicConfig(level=logging.DEBUG, datefmt=("%Y-%m-%d"),format=FORMAT)
+logging.basicConfig(level=logging.DEBUG, datefmt=("%Y-%m-%d"), format=FORMAT)
 logger = logging.getLogger('universidad_a')
 
 with DAG(
