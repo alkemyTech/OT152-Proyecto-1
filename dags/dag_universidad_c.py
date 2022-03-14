@@ -50,8 +50,11 @@ def transform(df):
 def load_txt():
     #extrae csv de universidad de Palermo
     folder = path.abspath(path.join(path.dirname( __file__ ), '..'))
+    custom_date_parser = lambda x: datetime.strptime(x, "%d/%b/%y")
+    
+    #Parsear la fecha
     df_raw= pd.read_csv(f'{folder}/csv/query_palermo.csv', infer_datetime_format=True, 
-                        parse_dates=['fecha_de_nacimiento'],dtype={'codigo_postal':'str'} )
+                        date_parser=custom_date_parser,dtype={'codigo_postal':'str'} )
     df = transform(df_raw)
     df.to_csv(f'{folder}/txt/txt_palermo.txt')
 
