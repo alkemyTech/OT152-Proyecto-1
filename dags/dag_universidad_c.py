@@ -54,10 +54,10 @@ def load_txt():
     df = transform(df_raw)
     df.to_csv(f'{folder}/txt/txt_palermo.txt')
 
-    #extrae csv de universidad de UTN
-    df_raw= pd.read_csv(f'{folder}/csv/query_utn.csv', infer_datetime_format=True )
+    #extrae csv de universidad de Jujuy
+    df_raw= pd.read_csv(f'{folder}/csv/query_jujuy.csv', infer_datetime_format=True )
     df = transform(df_raw)
-    df.to_csv(f'{folder}/txt/txt_nacional.txt')
+    df.to_csv(f'{folder}/txt/txt_jujuy.txt')
     
 with DAG(
     'universidades_c',
