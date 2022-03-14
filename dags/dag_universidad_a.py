@@ -1,39 +1,39 @@
+import logging
+import os
+from os import path
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-import logging
-from os import path, makedirs
 import pandas as pd
+
 
 # Ruta de la carpeta root
 root_folder = path.abspath(path.join(path.dirname(__file__), ".."))
 
 
-# Limpio cualquier espacio innecesario
-def clean_string(df):
-    df = df.str.lower().str.replace('_', ' ').str.strip()
-    return df
-
-
 # Transformo el csv de flores a txt
 def _transform_flores():
     df_flores = pd.read_csv(f'{root_folder}/csv/flores.csv')
-    if not path.exists(f'{root_folder}/txt'):
-        makedirs(f'{root_folder}/txt')
+    os.makedirs(f'{root_folder}/txt', exist_ok=True)
 
 
 # Procesameinto de los datos de la universidad de flores
-    df_flores['university'] = clean_string['university']
-    df_flores['career'] = clean_string['career']
-    df_flores['first_name'] = clean_string['first_name']
-    df_flores['last_name'] = clean_string['last_name']
-    df_flores['age'] = clean_string['age']
-    df_flores['location'] = clean_string['location']
-    df_flores['email'] = clean_string['email']
-    df_flores['inscription_date'] = clean_string['inscription_date']
+    columnas = ['university', 'career', 'first_name', 'last_name',
+                'age', 'location', 'email', 'inscription_date']
+    for col in columnas:
+        df_flores[col] = df_flores.apply(lambda x: x[col].replace('_', ' '),
+                                         axis=1)
+# Convierto todas las columnas en string menos age
+    for col in df_flores.columns:
+        if col != 'age':
+            df_flores[col] = df_flores[col].astype('string')
     df_flores['gender'] = ['gender'].str.replace('M', 'male')
     df_flores['gender'] = ['gender'].str.replace('F', 'female')
-
+# Reordeno las columnas
+    df_flores = df_flores[['university', 'career', 'inscription_date',
+                           'first_name', 'last_name',
+                           'gender', 'age', 'postal_code',
+                           'location', 'email']]
 
 # Lo guardo en un .txt
     df_flores.to_csv(f'{root_folder}/txt/flores.txt', index=None)
@@ -42,26 +42,29 @@ def _transform_flores():
 # Transformo el csv de villa maria a txt
 def _transform_villa_maria():
     df_villa_maria = pd.read_csv(f'{root_folder}/csv/villa.csv')
-    if not path.exists(f'{root_folder}/txt'):
-        makedirs(f'{root_folder}/txt')
-
+    os.makedirs(f'{root_folder}/txt', exist_ok=True)
 
 # Procesamiento de los datos de villa maria
-    df_villa_maria['university'] = clean_string['university']
-    df_villa_maria['career'] = clean_string['career']
-    df_villa_maria['first_name'] = clean_string['first_name']
-    df_villa_maria['last_name'] = clean_string['last_name']
-    df_villa_maria['age'] = clean_string['age']
-    df_villa_maria['location'] = clean_string['location']
-    df_villa_maria['email'] = clean_string['email']
-    df_villa_maria['inscription_date'] = clean_string['inscription_date']
-
+    cols = ['university', 'career', 'first_name', 'last_name',
+            'age', 'location', 'email', 'inscription_date']
+    for col in cols:
+        df_villa_maria[col] = df_villa_maria.apply(lambda x: x[col].replace('_', ' '),
+                                                   axis=1)
+# Convierto todas las columnas en string menos age
+    for col in df_villa_maria.columns:
+        if col != 'age':
+            df_villa_maria[col] = df_villa_maria[col].astype('string')
     df_villa_maria['gender'] = ['gender'].str.replace('M', 'male')
     df_villa_maria['gender'] = ['gender'].str.replace('F', 'female')
     codigo_postal = pd.read_csv(f'{root_folder}/csv/codigos_postales.csv',
                                 dtype={'codigo_postal': 'str'})
     df_villa_maria = df_villa_maria.merge(codigo_postal, on='codigo_postal')
-
+# Reordeno las columnas
+    df_villa_maria = df_villa_maria[['university', 'career',
+                                     'inscription_date', 'first_name'
+                                     'last_name', 'gender',
+                                     'age', 'postal_code',
+                                     'location', 'email']]
 # Lo guardo en un .txt
     df_villa_maria.to_csv(f'{root_folder}/txt/villa.txt', index=None)
 
