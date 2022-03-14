@@ -50,12 +50,14 @@ def transform(df):
 def load_txt():
     #extrae csv de universidad de Palermo
     folder = path.abspath(path.join(path.dirname( __file__ ), '..'))
-    df_raw= pd.read_csv(f'{folder}/csv/query_palermo.csv', infer_datetime_format=True )
+    df_raw= pd.read_csv(f'{folder}/csv/query_palermo.csv', infer_datetime_format=True, 
+                        parse_dates=['fecha_de_nacimiento'],dtype={'codigo_postal':'str'} )
     df = transform(df_raw)
     df.to_csv(f'{folder}/txt/txt_palermo.txt')
 
     #extrae csv de universidad de Jujuy
-    df_raw= pd.read_csv(f'{folder}/csv/query_jujuy.csv', infer_datetime_format=True )
+    df_raw= pd.read_csv(f'{folder}/csv/query_jujuy.csv', infer_datetime_format=True,
+                        parse_dates=['fecha_de_nacimiento'],dtype={'codigo_postal':'str'})
     df = transform(df_raw)
     df.to_csv(f'{folder}/txt/txt_jujuy.txt')
     
