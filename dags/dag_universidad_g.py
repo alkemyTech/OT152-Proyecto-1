@@ -8,13 +8,11 @@ import psycopg2
 from datetime import datetime,timedelta
 import pandas as pd
 from os import path
-from dotenv import load_dotenv
 
 #main folder location
 folder = path.abspath(path.join(path.dirname( __file__ ), '..'))
 file = folder +'/template.env'
 
-load_dotenv(dotenv_path=file)
 
 def db_connection():
     server = config('DB_HOST')
