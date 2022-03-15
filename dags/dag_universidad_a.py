@@ -17,16 +17,17 @@ def _transform_flores():
     os.makedirs(f'{root_folder}/txt', exist_ok=True)
 
 
-# Procesameinto de los datos de la universidad de flores
+# Procesamiento de los datos de la universidad de flores
+
+# Convierto todas las columnas en string menos age
+    for col in df_flores.columns:
+        if col != 'age':
+            df_flores[col] = df_flores[col].astype('string')
     columnas = ['university', 'career', 'first_name', 'last_name',
                 'age', 'location', 'email', 'inscription_date']
     for col in columnas:
         df_flores[col] = df_flores.apply(lambda x: x[col].replace('_', ' '),
                                          axis=1)
-# Convierto todas las columnas en string menos age
-    for col in df_flores.columns:
-        if col != 'age':
-            df_flores[col] = df_flores[col].astype('string')
     df_flores['gender'] = ['gender'].str.replace('M', 'male')
     df_flores['gender'] = ['gender'].str.replace('F', 'female')
 # Reordeno las columnas
@@ -45,15 +46,16 @@ def _transform_villa_maria():
     os.makedirs(f'{root_folder}/txt', exist_ok=True)
 
 # Procesamiento de los datos de villa maria
+
+# Convierto todas las columnas en string menos age
+    for col in df_villa_maria.columns:
+        if col != 'age':
+            df_villa_maria[col] = df_villa_maria[col].astype('string')
     cols = ['university', 'career', 'first_name', 'last_name',
             'age', 'location', 'email', 'inscription_date']
     for col in cols:
         df_villa_maria[col] = df_villa_maria.apply(lambda x: x[col].replace('_', ' '),
                                                    axis=1)
-# Convierto todas las columnas en string menos age
-    for col in df_villa_maria.columns:
-        if col != 'age':
-            df_villa_maria[col] = df_villa_maria[col].astype('string')
     df_villa_maria['gender'] = ['gender'].str.replace('M', 'male')
     df_villa_maria['gender'] = ['gender'].str.replace('F', 'female')
     codigo_postal = pd.read_csv(f'{root_folder}/csv/codigos_postales.csv',
